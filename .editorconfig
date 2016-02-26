@@ -1,0 +1,5 @@
+#Stop looking for editorconfig files in parent directories
+root = true
+
+[Makefile]
+indent_style = tab

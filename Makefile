@@ -29,5 +29,5 @@ deploy:
 	$(MAKE) push
 	./deploy.sh
 
-.PHONY: up stop logs build push deploy
+.PHONY: up stop logs build push deploy clean
 

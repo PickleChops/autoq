@@ -1,0 +1,18 @@
+version: '2'
+
+services:
+  web:
+    build: ./infrastructure/nginx
+    image: skytsar/nginx
+    ports:
+    - "80:80"
+    volumes:
+    - ./app:/usr/share/nginx/html
+    depends_on:
+    - phpfpm
+  phpfpm:
+    build: ./infrastructure/php-fpm
+    image: skytsar/phpfpm-phalcon
+    volumes:
+    - ./app:/var/www/html
+

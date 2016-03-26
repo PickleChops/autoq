@@ -1,27 +1,22 @@
-project_name=autoq
 
 up:
 	$(MAKE) build
-	docker run -p 80:80 -d --name ${project_name} skytsar/ou-project-placeholder
-	
+	docker-compose up -f base.yml -d
+
 stop:
-	docker stop ${project_name} 2>/dev/null; true
-	docker rm ${project_name} 2>/dev/null; true
+	docker-compose up -f base.yml stop
 
 clean:
 	$(MAKE) stop
-	docker rmi skytsar/ou-project-placeholder
-
-logs:
-	docker logs --tail=50 ${project_name}
+	docker-compose -f base.yml rm -f
 
 build:
-	docker rmi skytsar/ou-project-placeholder 2>/dev/null; true
-	docker build -t="skytsar/ou-project-placeholder" .
+	docker-compose -f base.yml build
 
 push:
 	docker login --username=skytsar
-	docker push skytsar/ou-project-placeholder
+	docker push skytsar/nginx
+	docker push skytsar/phpfpm-phalcon
 
 deploy:
 	$(MAKE) stop

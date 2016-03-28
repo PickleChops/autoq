@@ -10,6 +10,8 @@ services:
     - ./app:/usr/share/nginx/html
     depends_on:
     - phpfpm
+    environment:
+    command: /bin/bash -c "envsubst '\$${NGINX_SERVER_NAME}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
   phpfpm:
     build: ./infrastructure/php-fpm
     image: skytsar/phpfpm-phalcon

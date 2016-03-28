@@ -1,10 +1,10 @@
 
 up:
 	$(MAKE) build
-	docker-compose up -f base.yml -d
+	docker-compose -f base.yml up -d
 
 stop:
-	docker-compose up -f base.yml stop
+	docker-compose -f base.yml stop
 
 clean:
 	$(MAKE) stop
@@ -24,5 +24,5 @@ deploy:
 	$(MAKE) push
 	./deploy.sh
 
-.PHONY: up stop logs build push deploy
+.PHONY: up stop build push deploy
 

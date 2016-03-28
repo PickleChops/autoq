@@ -1,17 +1,21 @@
+#Default to dev environment
+ifndef COMPOSE_CONFIG_FILES
+	COMPOSE_CONFIG_FILES := -f base.yml -f dev.yml
+endif
 
 up:
 	$(MAKE) build
-	docker-compose -f base.yml up -d
+	docker-compose $(COMPOSE_CONFIG_FILES) up -d
 
 stop:
-	docker-compose -f base.yml stop
+	docker-compose $(COMPOSE_CONFIG_FILES) stop
 
 clean:
 	$(MAKE) stop
-	docker-compose -f base.yml rm -f
+	docker-compose $(COMPOSE_CONFIG_FILES) rm -f
 
 build:
-	docker-compose -f base.yml build
+	docker-compose $(COMPOSE_CONFIG_FILES) build
 
 push:
 	docker login --username=skytsar

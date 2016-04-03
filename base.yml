@@ -16,4 +16,12 @@ services:
     image: skytsar/phpfpm-phalcon
     volumes:
     - ./app/api:/var/www/html
-
+  postgres:
+    build: ./infrastructure/postgres
+    image: skytsar/postgres
+    hostname: postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD

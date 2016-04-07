@@ -4,5 +4,8 @@ services:
   api:
     environment:
     - NGINX_SERVER_NAME=autoq.localdev
+  phpfpm:
+    volumes:
+    - ./infrastructure/php-fpm/config/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
 
 

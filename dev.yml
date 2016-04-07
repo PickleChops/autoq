@@ -4,6 +4,7 @@ services:
   api:
     environment:
     - NGINX_SERVER_NAME=autoq.localdev
+    - NGINX_FASTCGI_READ_TIMEOUT=600s
   phpfpm:
     volumes:
     - ./infrastructure/php-fpm/config/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini

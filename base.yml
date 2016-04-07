@@ -10,7 +10,7 @@ services:
     - ./app/api:/usr/share/nginx/html
     depends_on:
     - phpfpm
-    command: /bin/bash -c "envsubst '\$${NGINX_SERVER_NAME}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
+    command: /bin/bash -c "envsubst '\$${NGINX_SERVER_NAME} \$${NGINX_FASTCGI_READ_TIMEOUT}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
   phpfpm:
     build: ./infrastructure/php-fpm
     image: skytsar/phpfpm-phalcon

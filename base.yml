@@ -20,8 +20,8 @@ services:
     build: ./infrastructure/postgres
     image: skytsar/postgres
     hostname: postgres
-    ports:
-      - 5432:5432
+    expose:
+      - 5432
     environment:
       - POSTGRES_USER
       - POSTGRES_PASSWORD

@@ -13,6 +13,7 @@ env:
     global:
         - DOCKER_VERSION=1.10.1-0~trusty
         - DOCKER_COMPOSE_VERSION=1.6.0
+        - COMPOSE_CONFIG_FILES="-f base.yml -f test.yml"
 
 before_install:
     # list docker-engine versions

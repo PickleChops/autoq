@@ -8,6 +8,4 @@ services:
   phpfpm:
     volumes:
     - ./infrastructure/php-fpm/config/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
-  postgres:
-    ports:
-      - 5432:5432
+

@@ -25,3 +25,11 @@ services:
     environment:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
+  go:
+    build: ./infrastructure/go
+    image: skytsar/go
+    volumes:
+    - ./app/autoqctl/src/autoqctl:/go/src/autoqctl
+    working_dir: /go/src/autoqctl
+
+

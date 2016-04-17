@@ -16,6 +16,8 @@ services:
     image: skytsar/phpfpm-phalcon
     volumes:
     - ./app/api:/var/www/html
+    depends_on:
+    - mysql
   postgres:
     build: ./infrastructure/postgres
     image: skytsar/postgres
@@ -25,6 +27,14 @@ services:
     environment:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
+  mysql:
+    build: ./infrastructure/mysql
+    image: skytsar/mysql
+    hostname: mysql
+    expose:
+     - 3306
+    environment:
+      - MYSQL_ROOT_PASSWORD
   go:
     build: ./infrastructure/go
     image: skytsar/go

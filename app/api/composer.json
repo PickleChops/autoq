@@ -1,5 +1,8 @@
 {
   "require-dev": {
     "phalcon/devtools": "dev-master"
+  },
+  "require": {
+    "vlucas/phpdotenv": "^2.2"
   }
 }

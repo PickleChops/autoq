@@ -1,24 +1,63 @@
 <?php
 
-use Phalcon\Mvc\Micro;
+use Phalcon\Loader;
+use Phalcon\Di\FactoryDefault;
 
-$app = new Micro();
+//Include the composer autoloader
+include __DIR__ . '/vendor/autoload.php';
 
-/** @var $router \Phalcon\Mvc\Router */
-$router = $app->getRouter();
-$router->setUriSource(\Phalcon\Mvc\Router::URI_SOURCE_SERVER_REQUEST_URI);
+//Load up .env environment support
+$env = (new \Dotenv\Dotenv(__DIR__))->load();
 
-// Say something
-$app->get('/api/sayhello', function () {
-    echo 'hello';
-});
-
-$app->notFound(function () use ($app) {
-    $app->response->setStatusCode(404, "Not Found")->sendHeaders();
-    echo 'This is not the page you are looking for.';
-});
-
-$app->handle();
+//Load up debugger
+$debug = (new Phalcon\Debug())->listen();
 
 
+// Register a Phalcon autoloader for this app
+$loader = new Loader();
+$loader->registerDirs(array(
+    './controllers/',
+    './models/'
+))->register();
+
+/***
+ * @var $di Phalcon\Di
+ */
+$di = new FactoryDefault();
+
+/**
+ * Add our routing config
+ */
+$di->set(
+    'router',
+    function () {
+        return require __DIR__.'/config/routes.php';
+    }
+);
+
+//Get the Router service
+$router = $di->get('router');
+
+//Process routes
+$router->handle();
+
+$dispatcher = $di->get('dispatcher');
+
+// Pass the processed router parameters to the dispatcher
+$dispatcher->setControllerName($router->getControllerName());
+$dispatcher->setActionName($router->getActionName());
+$dispatcher->setParams($router->getParams());
+
+// Dispatch the request
+$dispatcher->dispatch();
+
+// Get the returned value by the last executed action
+$response = $dispatcher->getReturnedValue();
+
+// Check if the action returned is a 'response' object
+if ($response instanceof Phalcon\Http\ResponseInterface) {
+
+    // Send the response
+    $response->send();
+}
 

@@ -15,10 +15,13 @@ $debug = (new Phalcon\Debug())->listen();
 
 // Register a Phalcon autoloader for this app
 $loader = new Loader();
-$loader->registerDirs(array(
+$loader->registerDirs([
     './controllers/',
     './models/'
-))->register();
+]);
+$loader->registerNamespaces(['Api\Services' => './services/']);
+$loader->register();
+
 
 /***
  * @var $di Phalcon\Di
@@ -31,9 +34,24 @@ $di = new FactoryDefault();
 $di->set(
     'router',
     function () {
-        return require __DIR__.'/config/routes.php';
+        return require __DIR__ . '/config/routes.php';
     }
 );
+
+/**
+ * Bind in our job validator
+ */
+$di->set('jobValidator', function () {
+    return new \Api\Services\ValidateJobDefintion();
+});
+
+/**
+ * Bind in our api helper
+ */
+$di->set('apiHelper', function () {
+    return new \Api\Services\ApiHelper();
+});
+
 
 //Get the Router service
 $router = $di->get('router');
@@ -41,6 +59,7 @@ $router = $di->get('router');
 //Process routes
 $router->handle();
 
+//Get the dispatcher
 $dispatcher = $di->get('dispatcher');
 
 // Pass the processed router parameters to the dispatcher
@@ -54,10 +73,13 @@ $dispatcher->dispatch();
 // Get the returned value by the last executed action
 $response = $dispatcher->getReturnedValue();
 
-// Check if the action returned is a 'response' object
-if ($response instanceof Phalcon\Http\ResponseInterface) {
-
-    // Send the response
-    $response->send();
+// Check if the action returned is a response object
+if (!($response instanceof Phalcon\Http\ResponseInterface)) {
+    
+    //If for some reason we do not get a response return an error back to client
+    $response = $di->get('apiHelper')->responseError('Unknown request');
 }
+
+// Send the response
+$response->send();
 

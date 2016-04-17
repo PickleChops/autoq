@@ -1,14 +1,9 @@
 <?php
 
-use Phalcon\Mvc\Controller;
 
 /**
- * Class JobController
- *
- * Endpoints for /job/ api calls
- *
+ * Class JobController Endpoints for /job/ api calls
  */
-
 class JobController extends BaseController
 {
 
@@ -19,18 +14,37 @@ class JobController extends BaseController
     public function addAction()
     {
 
+        $apiHelper = $this->di->get('apiHelper');
+        
+
+
         if ($this->request->isPost()) {
 
-            //Validate input
+            /**
+             * @var $jobValidator \Api\Services\ValidateJobDefintion
+             */
+            $jobValidator = $this->di->get('jobValidator');
 
-            //If good add to db and return response in format
+            $definition = $this->request->getPost('definition', 'trim');
 
-            //if fail construct standard error response
+            if (($messages = $jobValidator->validateDefiniton($definition))) {
 
-            $response = $this->responseSuccess(['id' => 99]);
+                //Convert post data to our Json representation
+
+
+                //Add job
+
+                $response = $apiHelper->responseSuccess();
+
+            } else {
+
+                //Send back errors in job submission
+                $response = $apiHelper->responseSuccess();
+
+            }
 
         } else {
-            $response = $this->responseWrongMethod();
+            $response = $apiHelper->responseWrongMethod();
         }
 
 

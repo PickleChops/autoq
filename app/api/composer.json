@@ -3,6 +3,7 @@
     "phalcon/devtools": "dev-master"
   },
   "require": {
-    "vlucas/phpdotenv": "^2.2"
+    "vlucas/phpdotenv": "^2.2",
+    "symfony/yaml": "^3.0"
   }
 }

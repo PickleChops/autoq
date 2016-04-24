@@ -13,7 +13,7 @@ class ApiHelper
 
 
     private $errorResponse = ['status' => self::API_STATUS_ERROR, 'reason' => ''];
-    private $successResponse = ['status' => self::API_STATUS_ERROR, 'data' => ''];
+    private $successResponse = ['status' => self::API_STATUS_OK, 'data' => ''];
 
 
     /**

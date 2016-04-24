@@ -3,6 +3,9 @@ FROM php:5.6.19-fpm
 # Install modules
 RUN docker-php-ext-install mbstring
 RUN docker-php-ext-install bcmath
+RUN docker-php-ext-install pdo_mysql
+
+
 RUN pecl install xdebug
 
 #Add PHP YAML support

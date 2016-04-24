@@ -12,7 +12,6 @@ $env = (new \Dotenv\Dotenv(__DIR__))->load();
 //Load up debugger
 $debug = (new Phalcon\Debug())->listen();
 
-
 // Register a Phalcon autoloader for this app
 $loader = new Loader();
 $loader->registerDirs([
@@ -27,6 +26,17 @@ $loader->register();
  * @var $di Phalcon\Di
  */
 $di = new FactoryDefault();
+
+
+/**
+ * Add app config 
+ */
+$di->set(
+    'config',
+    function () {
+        return require __DIR__ . '/config/config.php';
+    }
+);
 
 /**
  * Add our routing config

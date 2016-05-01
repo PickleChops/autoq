@@ -13,7 +13,7 @@ class ApiHelper
 
 
     private $errorResponse = ['status' => self::API_STATUS_ERROR, 'reason' => ''];
-    private $successResponse = ['status' => self::API_STATUS_OK, 'data' => ''];
+    private $successResponse = ['status' => self::API_STATUS_OK];
 
 
     /**
@@ -47,10 +47,26 @@ class ApiHelper
      * @param $content
      * @return \Phalcon\Http\Response
      */
-    public function responseSuccess($content)
+    public function responseSuccessWithData($content)
     {
         $response = $this->initResponse();
+        
         $this->successResponse['data'] = $content;
+        $response->setJsonContent($this->successResponse);
+
+        return $response;
+
+    }
+
+    /**
+     * Success response
+     * @param $content
+     * @return \Phalcon\Http\Response
+     */
+    public function responseSuccess()
+    {
+        $response = $this->initResponse();
+        
         $response->setJsonContent($this->successResponse);
 
         return $response;

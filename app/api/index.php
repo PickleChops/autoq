@@ -1,5 +1,7 @@
 <?php
 
+date_default_timezone_set('Europe/London');
+
 use Phalcon\Loader;
 use Phalcon\Di\FactoryDefault;
 
@@ -15,10 +17,9 @@ $debug = (new Phalcon\Debug())->listen();
 // Register a Phalcon autoloader for this app
 $loader = new Loader();
 $loader->registerDirs([
-    './controllers/',
-    './models/'
+    './controllers/'
 ]);
-$loader->registerNamespaces(['Api\Services' => './services/']);
+$loader->registerNamespaces(['Api\Services' => './services/', 'Api\data' => './data/', 'Api\data\jobs' => './data/jobs']);
 $loader->register();
 
 
@@ -26,6 +27,16 @@ $loader->register();
  * @var $di Phalcon\Di
  */
 $di = new FactoryDefault();
+
+/**
+ * Add logger
+ */
+$di->set(
+    'log',
+    function () {
+        return new \Phalcon\Logger\Adapter\Stream("php://stdout");
+    }
+);
 
 
 /**

@@ -45,16 +45,18 @@ class ValidateJobDefintion
             return false;
         }
 
-        if (($this->def = $this->parseYaml($rawDef, $message)) === false) {
+        if (($parsedYaml = $this->parseYaml($rawDef, $message)) === false) {
             $this->errorMsg = $message;
             return false;
         }
 
-        if ($this->validateParsedYaml($this->def, $message) === false) {
+        if ($this->validateParsedYaml($parsedYaml, $message) === false) {
             $this->errorMsg = $message;
             return false;
         }
 
+        $this->def = $parsedYaml;
+        
         return true;
 
     }
@@ -123,7 +125,7 @@ class ValidateJobDefintion
     /**
      * @return mixed
      */
-    public function getDef()
+    public function getDefAsYaml()
     {
         return $this->def;
     }

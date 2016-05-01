@@ -1,4 +1,4 @@
-name: Sample job 
+name: Sample job updated for sure
 connection: default
 schedule: Every Tuesday at 9am
 query: |
@@ -11,4 +11,7 @@ outputs:
     format: csv
   - type: email
     address: boydi@boydi.com
+    format: html
+  - type: email
+    address: sid@boydi.com
     format: html

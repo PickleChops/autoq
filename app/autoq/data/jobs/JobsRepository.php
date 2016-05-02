@@ -7,7 +7,7 @@ use Api\data\SqlRepositoryInterface;
 use Phalcon\Config;
 use Phalcon\Db;
 use Phalcon\Db\Exception;
-use Phalcon\Db\Adapter\Pdo\Mysql as MysqlConnection;
+use Phalcon\Db\Adapter\Pdo\Mysql;
 use Phalcon\Di;
 use Phalcon\Logger\Adapter\Stream;
 
@@ -26,7 +26,7 @@ class JobsRepository implements SqlRepositoryInterface
     protected $config;
 
     /**
-     * @var $conection MysqlConnection
+     * @var $conection Mysql
      */
     protected $connection;
 
@@ -51,7 +51,7 @@ class JobsRepository implements SqlRepositoryInterface
 
         try {
 
-            $connection = new MysqlConnection(array(
+            $connection = new Mysql(array(
                 'host' => $this->config['database']['host'],
                 'username' => $this->config['database']['username'],
                 'password' => $this->config['database']['password'],
@@ -74,7 +74,7 @@ class JobsRepository implements SqlRepositoryInterface
     public function save($data)
     {
 
-        if (!($this->connection instanceof MysqlConnection)) {
+        if (!($this->connection instanceof Mysql)) {
             $this->logger->error("No database connection");
             return false;
         }
@@ -101,7 +101,7 @@ class JobsRepository implements SqlRepositoryInterface
     public function getByID($id)
     {
 
-        if (!($this->connection instanceof MysqlConnection)) {
+        if (!($this->connection instanceof Mysql)) {
             $this->logger->error("No database connection");
             return false;
         }
@@ -134,7 +134,7 @@ class JobsRepository implements SqlRepositoryInterface
     public function getWhere($whereString = null)
     {
 
-        if (!($this->connection instanceof MysqlConnection)) {
+        if (!($this->connection instanceof Mysql)) {
             $this->logger->error("No database connection");
             return false;
         }
@@ -165,7 +165,7 @@ class JobsRepository implements SqlRepositoryInterface
     public function delete($id)
     {
 
-        if (!($this->connection instanceof MysqlConnection)) {
+        if (!($this->connection instanceof Mysql)) {
             $this->logger->error("No database connection");
             return false;
         }
@@ -191,7 +191,7 @@ class JobsRepository implements SqlRepositoryInterface
     public function update($id, $data)
     {
 
-        if (!($this->connection instanceof MysqlConnection)) {
+        if (!($this->connection instanceof Mysql)) {
             $this->logger->error("No database connection");
             return false;
         }
@@ -221,7 +221,7 @@ class JobsRepository implements SqlRepositoryInterface
     public function exists($id)
     {
 
-        if (!($this->connection instanceof MysqlConnection)) {
+        if (!($this->connection instanceof Mysql)) {
             $this->logger->error("No database connection");
             return false;
         }

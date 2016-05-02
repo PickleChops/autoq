@@ -1,13 +1,21 @@
 version: '2'
 
 services:
+  autoq:
+    build: ./infrastructure/supervisord
+    image: skytsar/supervisord
+    volumes:
+    - ./app/autoq:/usr/src/autoq
+    working_dir: /usr/src/autoq
+    depends_on:
+    - mysql
   api:
     build: ./infrastructure/nginx
     image: skytsar/nginx
     ports:
     - "80:80"
     volumes:
-    - ./app/api:/usr/share/nginx/html
+    - ./app/autoq:/usr/share/nginx/html
     depends_on:
     - phpfpm
     command: /bin/bash -c "envsubst '\$${NGINX_SERVER_NAME} \$${NGINX_FASTCGI_READ_TIMEOUT}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
@@ -15,7 +23,7 @@ services:
     build: ./infrastructure/php-fpm
     image: skytsar/phpfpm-phalcon
     volumes:
-    - ./app/api:/var/www/html
+    - ./app/autoq:/var/www/html
     depends_on:
     - mysql
   postgres:

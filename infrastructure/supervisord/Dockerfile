@@ -1,4 +1,4 @@
-FROM php:5.6-fpm
+FROM php:5.6-cli
 
 # Install modules
 RUN docker-php-ext-install mbstring
@@ -22,3 +22,8 @@ RUN apt-get update && apt-get install -y git \
     && echo 'extension=phalcon.so' > /usr/local/etc/php/conf.d/phalcon.ini \
     && cd ../.. && rm -rf cphalcon
 
+RUN apt-get update && apt-get install -y supervisor \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+COPY ./config/supervisord.conf /etc/supervisor/supervisord.conf
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]

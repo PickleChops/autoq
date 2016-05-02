@@ -22,11 +22,14 @@ push:
 	docker push skytsar/nginx
 	docker push skytsar/phpfpm-phalcon
 
+cli:
+	docker-compose $(COMPOSE_CONFIG_FILES) run --rm --no-deps autoq bash
+
 deploy:
 	$(MAKE) stop
 	$(MAKE) build
 	$(MAKE) push
 	./deploy.sh
 
-.PHONY: up stop build push deploy
+.PHONY: up stop build push deploy cli
 

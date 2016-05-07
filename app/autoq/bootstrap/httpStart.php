@@ -18,10 +18,10 @@ $loader = new Loader();
 $loader->registerDirs([
     './controllers/'
 ]);
-$loader->registerNamespaces(['Api\Services' => './services/', 'Api\data' => './data/', 'Api\data\jobs' => './data/jobs']);
+$loader->registerNamespaces(['Autoq\Services' => './Services/', 'Autoq\Data' => './Data/', 'Autoq\Data\Jobs' => './Data/Jobs']);
 $loader->register();
 
 //Add base services to container
-require __DIR__  . '/services.php';
+require __DIR__  . '/Services.php';
 
 

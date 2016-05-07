@@ -1,8 +1,9 @@
 <?php
 
-namespace Api\Services;
+namespace Autoq\Services;
 
 
+use Autoq\Data\Arrayable;
 use Phalcon\Http\Response;
 
 class ApiHelper
@@ -43,14 +44,22 @@ class ApiHelper
     }
 
     /**
-     * Success response
+     * Success with data
      * @param $content
-     * @return \Phalcon\Http\Response
+     * @return Response
+     * @throws \Exception
      */
     public function responseSuccessWithData($content)
     {
+        if(is_object($content)) {
+            if($content instanceof Arrayable) {
+                $content = $content->toArray();
+            } else {
+                throw new \Exception("Object received, expected array");
+            }
+        }
+
         $response = $this->initResponse();
-        
         $this->successResponse['data'] = $content;
         $response->setJsonContent($this->successResponse);
 
@@ -59,14 +68,13 @@ class ApiHelper
     }
 
     /**
-     * Success response
-     * @param $content
-     * @return \Phalcon\Http\Response
+     * Success no data
+     * @return Response
      */
     public function responseSuccess()
     {
         $response = $this->initResponse();
-        
+
         $response->setJsonContent($this->successResponse);
 
         return $response;

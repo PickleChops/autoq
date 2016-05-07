@@ -59,4 +59,14 @@ $router->addPut(
     )
 );
 
+$router->addGet(
+    "/queue/",
+    array(
+        'controller' => 'Queue',
+        'action'     => 'getAll'
+    )
+);
+
+
+
 return $router;

@@ -1,11 +1,12 @@
-<?php 
+<?php
 
-namespace Api\data\jobs;
+namespace Autoq\Data\Jobs;
+use Autoq\Data\Arrayable;
 
 /**
  * Class JobDefinition
  */
-class JobDefinition
+class JobDefinition implements Arrayable
 {
     private $id;
     private $name;
@@ -13,7 +14,108 @@ class JobDefinition
     private $connection;
     private $query;
 
-    private $outputs;
+    private $created;
+    private $updated;
+
+    private $outputs = [];
+
+
+    const OUTPUT_EMAIL = "email";
+    const OUTPUT_S3 = "s3";
+
+
+    public function __construct($data)
+    {
+        $this->setId($data['id']);
+        $this->setName($data['name']);
+        $this->setQuery($data['query']);
+        $this->setCreated($data['created']);
+        $this->setUpdated($data['updated']);
+        $this->setSchedule($data['schedule']);
+        $this->setConnection($data['connection']);
+
+        if (count($data['outputs'])) {
+
+            foreach ($data['outputs'] as $outputData) {
+
+                if ($outputData['type'] == self::OUTPUT_EMAIL) {
+                    $output = new OutputEmail($outputData);
+                } elseif ($outputData['type'] == self::OUTPUT_S3) {
+                    $output = new OutputS3($outputData);
+                } else {
+                    throw new \Exception("Unknown output type ({$outputData['type']}) in job definition");
+                }
+
+                $this->addOutput($output);
+
+            }
+        }
+    }
+
+    /**
+     * Convert a job definition object back to a plain array
+     * @return array
+     * @throws \Exception
+     */
+    public function toArray()
+    {
+        $data = [];
+
+        $data['id'] = $this->getId();
+        $data['name'] = $this->getName();
+        $data['query'] = $this->getQuery();
+        $data['created'] = $this->getCreated();
+        $data['updated'] = $this->getUpdated();
+        $data['schedule'] = $this->getSchedule();
+        $data['connection'] = $this->getConnection();
+
+        $data['outputs'] = [];
+
+        if (count($this->getOutputs())) {
+            foreach ($this->getOutputs() as $output) {
+
+                $outputData = $output->toArray();
+                array_push($data['outputs'], $outputData);
+
+            }
+        }
+
+        return $data;
+
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCreated()
+    {
+        return $this->created;
+    }
+
+    /**
+     * @param mixed $created
+     */
+    private function setCreated($created)
+    {
+        $this->created = $created;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUpdated()
+    {
+        return $this->updated;
+    }
+
+    /**
+     * @param mixed $updated
+     */
+    private function setUpdated($updated)
+    {
+        $this->updated = $updated;
+    }
+
 
     /**
      * @return mixed
@@ -21,6 +123,14 @@ class JobDefinition
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * @param mixed $id
+     */
+    private function setId($id)
+    {
+        $this->id = $id;
     }
 
     /**
@@ -108,7 +218,7 @@ class JobDefinition
      */
     public function countOutputs()
     {
-       return count($this->outputs);
+        return count($this->outputs);
     }
 
 }

@@ -13,15 +13,15 @@ include __DIR__ . '/../vendor/autoload.php';
 // Register a Phalcon autoloader for this app
 $loader = new Loader();
 $loader->registerNamespaces([
-    'Api\Services' => './services/', 
-    'Api\data' => './data/',
-    'Api\data\jobs' => './data/jobs',
-    'Lib\Debug' => './Lib/Debug/',
-    'CLI' => './cli'
+    'Autoq\Services' => './Services/', 
+    'Autoq\Data' => './Data/',
+    'Autoq\Data\Jobs' => './Data/Jobs',
+    'Autoq\Lib\Debug' => './Lib/Debug/',
+    'Autoq\CLI' => './Cli'
     ]);
 $loader->register();
 
 //Add required services to container and return ioc container
-return require __DIR__  . '/services.php';
+return require __DIR__  . '/Services.php';
 
 

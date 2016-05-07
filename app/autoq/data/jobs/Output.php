@@ -1,11 +1,12 @@
 <?php
 
-namespace Api\data\jobs;
+namespace Autoq\Data\Jobs;
+use Autoq\Data\Arrayable;
 
 /**
  * Class Output
  */
-abstract class Output
+abstract class Output implements Arrayable
 {
     private $type;
     private $format;
@@ -41,5 +42,10 @@ abstract class Output
     {
         $this->format = $format;
     }
+
+    /**
+     * @return []
+     */
+    abstract public function toArray();   
     
 }

@@ -17,7 +17,7 @@ class CLI
         $this->di = require __DIR__ . "/bootstrap/cliStart.php";
 
         //Setup error/exception handler
-        \Lib\Debug\Debug::initialize(true, STDOUT);
+        \Autoq\Lib\Debug\Debug::initialize(true, STDOUT);
 
         //Dispatch to relevant task
         global $argv;
@@ -38,7 +38,7 @@ class CLI
 
         $argsForTask = array_slice($argv, 2);
         
-        $taskWithNS = "CLI\\$processToRun";
+        $taskWithNS = "Autoq\\CLI\\$processToRun";
 
         if (class_exists($taskWithNS)) {
             new $taskWithNS($this->di, $argsForTask);

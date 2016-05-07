@@ -1,11 +1,7 @@
 <?php
-/**
- * User: bstratton
- * Date: 06/07/15
- * Time: 10:48
- */
 
-namespace Lib\Debug;
+
+namespace Autoq\Lib\Debug;
 
 
 class DebugError implements DebugEventInterface

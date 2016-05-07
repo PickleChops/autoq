@@ -26,6 +26,13 @@ $di->set(
 );
 
 /**
+ * Bind in our api helper
+ */
+$di->set('dBConnectionService', function () use ($di) {
+    return new \Autoq\Services\DatabaseConnections($di);
+});
+
+/**
  * Add router for web requests
  */
 $di->set(
@@ -39,14 +46,14 @@ $di->set(
  * Bind in our job validator
  */
 $di->set('jobValidator', function () {
-    return new \Api\Services\ValidateJobDefintion();
+    return new \Autoq\Services\ValidateJobDefintion();
 });
 
 /**
  * Bind in our api helper
  */
 $di->set('apiHelper', function () {
-    return new \Api\Services\ApiHelper();
+    return new \Autoq\Services\ApiHelper();
 });
 
 return $di;

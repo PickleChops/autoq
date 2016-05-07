@@ -9,12 +9,12 @@ class JobController extends BaseController
     private $debugJobAdd = false;
 
     /**
-     * @var $apiHelper \Api\Services\ApiHelper
+     * @var $apiHelper \Autoq\Services\ApiHelper
      */
     private $apiHelper;
 
     /**
-     * @var $repo \Api\data\jobs\JobsRepository
+     * @var $repo \Autoq\Data\Jobs\JobsRepository
      */
     private $repo;
 
@@ -25,7 +25,7 @@ class JobController extends BaseController
     public function initialize()
     {
         $this->apiHelper = $this->di->get('apiHelper');
-        $this->repo = $this->di->get(\Api\data\jobs\JobsRepository::class, [$this->getDI()]);
+        $this->repo = $this->di->get(\Autoq\Data\Jobs\JobsRepository::class, [$this->getDI()]);
     }
 
     /**
@@ -37,7 +37,7 @@ class JobController extends BaseController
         if ($this->request->isPost() || $this->checkForDebugOverride()) {
 
             /**
-             * @var $jobValidator \Api\Services\ValidateJobDefintion
+             * @var $jobValidator \Autoq\Services\ValidateJobDefintion
              */
             $jobValidator = $this->di->get('jobValidator');
 
@@ -76,13 +76,13 @@ class JobController extends BaseController
      */
     public function getAction($jobID)
     {
-        if (($job = $this->repo->getByID($jobID)) === false) {
+        if (($jobDefinition = $this->repo->getByID($jobID)) === false) {
             $response = $this->apiHelper->responseError("Unable to read job");
-        } elseif($job === []) {
+        } elseif($jobDefinition === []) {
             $response = $this->apiHelper->responseError("Job with ID: $jobID does not exist");
 
         } else {
-            $response = $this->apiHelper->responseSuccessWithData($job);
+            $response = $this->apiHelper->responseSuccessWithData($jobDefinition);
         }
         return $response;
     }
@@ -112,7 +112,7 @@ class JobController extends BaseController
         if ($this->request->isPut()) {
 
             /**
-             * @var $jobValidator \Api\Services\ValidateJobDefintion
+             * @var $jobValidator \Autoq\Services\ValidateJobDefintion
              */
             $jobValidator = $this->di->get('jobValidator');
 

@@ -1,9 +1,8 @@
 <?php
 
-namespace Api\Services;
+namespace Autoq\Services;
 
 use Phalcon\Validation;
-use Phalcon\Validation\Validator\Identical;
 use Phalcon\Validation\Validator\PresenceOf;
 
 use Symfony\Component\Yaml\Exception\ParseException;

@@ -1,5 +1,5 @@
 <?php
-namespace Api\data;
+namespace Autoq\Data;
 /**
  * Interface SqlRepositoryInterface
  */

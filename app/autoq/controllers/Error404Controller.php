@@ -5,7 +5,7 @@ class Error404Controller extends BaseController
     public function indexAction()
     {
         /**
-         * @var $apiHelper \Api\Services\ApiHelper
+         * @var $apiHelper \Autoq\Services\ApiHelper
          */
         $apiHelper = $this->di->get('apiHelper');
 

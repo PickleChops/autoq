@@ -1,6 +1,6 @@
 <?php
 
-namespace Lib\Debug;
+namespace Autoq\Lib\Debug;
 
 
 interface DebugEventInterface

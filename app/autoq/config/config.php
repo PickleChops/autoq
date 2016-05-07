@@ -4,7 +4,7 @@ use Phalcon\Config;
 
 $settings = [
     "database" => [
-        "adapter" => "Mysql",
+        "adapter" => \Phalcon\Db\Adapter\Pdo\Mysql::class,
         "host" => getenv('DATABASE_HOST'),
         "username" => getenv('DATABASE_USER'),
         "password" => getenv('DATABASE_PASSWORD'),

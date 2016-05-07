@@ -1,6 +1,6 @@
 <?php
 
-namespace CLI;
+namespace Autoq\CLI;
 
 use Phalcon\Di;
 

@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Lib\Debug;
+namespace Autoq\Lib\Debug;
 
 /**
  * Class Debug Simple debug class to catch errors
@@ -107,6 +107,8 @@ class Debug
         $errorDetails = $this->buildErrorResponse($debugEvent);
 
         fwrite($this->stream, $this->formatResponseForStream($errorDetails));
+
+        exit(1);
         
     }
 
@@ -121,7 +123,7 @@ class Debug
         $return .= "\terror code: {$errorDetails['code']}\n";
         $return .= "\toccurred in file/line: {$errorDetails['file']}:{$errorDetails['line']}\n";
         $return .= "\tcli: {$errorDetails['cli']}\n";
-        $return .= "\tstack trace: {$errorDetails['stack']}\n";
+        $return .= "\tstack trace: {$errorDetails['stack']}\n\n";
 
         return $return;
     }

@@ -1,9 +1,11 @@
 {
   "require-dev": {
-    "phalcon/devtools": "dev-master"
+    "phalcon/devtools": "dev-master",
+    "phpunit/phpunit": "^4.8"
+
   },
   "require": {
     "vlucas/phpdotenv": "^2.2",
-    "symfony/yaml": "^3.0"
+    "symfony/yaml": "^3.0",
   }
 }

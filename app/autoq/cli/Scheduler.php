@@ -1,17 +1,46 @@
 <?php
 
-namespace CLI;
+namespace Autoq\CLI;
 
+use Autoq\Data\Jobs\JobsRepository;
+use Autoq\Services\DatabaseConnections;
+use Phalcon\Config;
 use Phalcon\Di;
 
 class Scheduler
 {
 
+    /**
+     * @var $di Di
+     */
     protected $di;
 
+    /**
+     * @var $dBConnections DatabaseConnections
+     */
+    protected $dBConnectionService;
+
+    /**
+     * @var $config Config
+     */
+    protected $config;
+
+    /**
+     * @var $jobRepo JobsRepository
+     */
+    protected $jobsRepo;
+
+    /**
+     * Scheduler constructor.
+     * @param Di $di
+     * @param array $argv
+     */
     public function __construct(Di $di, Array $argv)
     {
         $this->di = $di;
+        $this->config = $this->di->get('config');
+        $this->dBConnectionService = $this->di->get('dBConnectionService');
+        $this->jobsRepo = $this->di->get(JobsRepository::class, [$di]);
         
         $this->main();
 
@@ -20,17 +49,24 @@ class Scheduler
     /**
      * Off we go
      */
-    public function main() {
+    protected function main() {
         
-    
-        //Get all the jobs
         
-        //Get last entry for this job from queue
+        $jobs = $this->jobsRepo->getAll();
+
+        var_dump($jobs);
         
-        //
-    
-    
+        
+        
+        //Determine if job is ready to be scheduled
+        
+        
+        //If ready add to queue
+        
     
     }
+    
+    
+    
 
 }

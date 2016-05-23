@@ -13,8 +13,9 @@ class ScheduleLexerTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider timeProvider
      * @param $timeString
+     * @param $normalisedString
      */
-    public function testIsTime($timeString)
+    public function testIsTime($timeString, $normalisedString)
     {
 
         $lexer = new ScheduleLexer(new Tokenizer($timeString));
@@ -27,6 +28,7 @@ class ScheduleLexerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(ScheduleLexer::TYPE_TIME, $token['type']);
         $this->assertEquals($timeString, $token['token']);
+        $this->assertEquals($normalisedString, $token['normalised']);
     }
 
     /**
@@ -36,11 +38,12 @@ class ScheduleLexerTest extends \PHPUnit_Framework_TestCase
     public function timeProvider()
     {
         return [
-            ['12:23pm'],
-            ['02:23'],
-            ['12:23Am'],
-            ['1pm'],
-            ['20:20']
+            ['12:23pm', '12:23'],
+            ['02:23', '02:23'],
+            ['12:23Am', '00:23'],
+            ['1pm', '13:00'],
+            ['20:20', '20:20'],
+            ['5:05', '05:05']
         ];
     }
 

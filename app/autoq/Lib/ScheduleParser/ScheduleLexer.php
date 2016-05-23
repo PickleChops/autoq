@@ -10,6 +10,7 @@ class ScheduleLexer implements \Iterator
     const TYPE_FREE_TEXT = 'free_text';
 
     const TYPE_KEYWORD_FREQUENCY = 'frequency';
+    const TYPE_KEYWORD_DURATION_HOUR = 'duration_hour';
     const TYPE_KEYWORD_DURATION_DAY = 'duration_day';
     const TYPE_KEYWORD_DURATION_WEEK = 'duration_week';
     const TYPE_KEYWORD_DURATION_MONTH = 'duration_month';
@@ -20,6 +21,10 @@ class ScheduleLexer implements \Iterator
 
         self::TYPE_KEYWORD_FREQUENCY => [
             'Every', 'Each'
+        ],
+
+        self::TYPE_KEYWORD_DURATION_HOUR => [
+            'Hour'
         ],
 
         self::TYPE_KEYWORD_DURATION_DAY => [
@@ -56,6 +61,8 @@ class ScheduleLexer implements \Iterator
      */
     public function __construct(Tokenizer $tokenizer)
     {
+        $this->count = $tokenizer->getCount();
+
         foreach ($tokenizer as $token) {
 
             if (($date = $this->isDate($token)) !== false) {
@@ -70,6 +77,8 @@ class ScheduleLexer implements \Iterator
                 $this->addProcessedToken($token, self::TYPE_FREE_TEXT, $token);
             }
         }
+
+ //       var_dump($this->processedTokens);
     }
 
     /**
@@ -98,12 +107,12 @@ class ScheduleLexer implements \Iterator
 
                 if (is_array($wordOrArray)) {
 
-                    if(in_array($properCaseToken,$wordOrArray)) {
+                    if (in_array($properCaseToken, $wordOrArray)) {
                         $returnKeywordType = $keywordType;
                         break 2;
                     }
 
-                } elseif($properCaseToken == $wordOrArray) {
+                } elseif ($properCaseToken == $wordOrArray) {
                     $returnKeywordType = $keywordType;
                     break 2;
                 }
@@ -124,23 +133,33 @@ class ScheduleLexer implements \Iterator
     {
         $time = false;
 
-        if (preg_match("/^(1[0-2]|0?[1-9])(am|pm)$/i", $token, $matches) > 0) {
-            $hour = strlen($matches[1]) == 1 ? "0{$matches[1]}" : $matches[1];
-            $minute = "00";
-        }
+        /**
+         * Normalise time to 24hr
+         * @param $hour
+         * @param $minute
+         * @param null $ampm
+         * @return string
+         */
+        $normaliseHelper = function ($hour, $minute, $ampm = null) {
 
-
-            $regexes = [
-            '/^(1[0-2]|0?[1-9])(am|pm)$/i',   //12pm
-            '/^(1[0-2]|0?[1-9]):[0-5][0-9](am|pm)$/i', //12:23pm
-            '/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/i' // 24hr
-        ];
-
-        foreach ($regexes as $regex) {
-            if (preg_match($regex, $token, $match) > 0) {
-                $time = $match[0];
-                break;
+            if (strtolower($ampm) == 'pm' && (int)$hour >= 1 && (int)$hour < 12) {
+                $hour += 12;
             }
+
+            if (strtolower($ampm) == 'am' && (int)$hour == 12) {
+                $hour -= 12;
+            }
+
+            return str_pad($hour, 2, '0', STR_PAD_LEFT) . ':' . str_pad($minute, 2, '0', STR_PAD_LEFT);
+
+        };
+
+        if (preg_match('/^(1[0-2]|0?[1-9])(am|pm)$/i', $token, $matches) > 0) {
+            $time = $normaliseHelper($matches[1], 0, $matches[2]);
+        } elseif (preg_match('/^(1[0-2]|0?[1-9]):([0-5][0-9])(am|pm)$/i', $token, $matches) > 0) {
+            $time = $normaliseHelper($matches[1], $matches[2], $matches[3]);
+        } elseif (preg_match('/^(1[0-9]|2[0-3]|0?[0-9]):([0-5][0-9])$/i', $token, $matches) > 0) {
+            $time = $normaliseHelper($matches[1], $matches[2]);
         }
 
         return $time;
@@ -212,7 +231,8 @@ class ScheduleLexer implements \Iterator
     /**
      * @return mixed
      */
-    public function rewind() {
+    public function rewind()
+    {
         $this->position = 0;
         return $this->current();
     }
@@ -220,28 +240,32 @@ class ScheduleLexer implements \Iterator
     /**
      * @return mixed
      */
-    public function current() {
+    public function current()
+    {
         return $this->position < $this->count ? $this->processedTokens[$this->position] : false;
     }
 
     /**
      * @return mixed
      */
-    public function peek() {
+    public function peek()
+    {
         return $this->position < $this->count - 1 ? $this->processedTokens[$this->position + 1] : false;
     }
 
     /**
      * @return mixed
      */
-    public function next() {
+    public function next()
+    {
         return $this->position < $this->count ? $this->processedTokens[$this->position++] : false;
     }
 
     /**
      * @return mixed
      */
-    public function prev() {
+    public function prev()
+    {
         return $this->position ? $this->processedTokens[--$this->position] : false;
     }
 
@@ -258,7 +282,7 @@ class ScheduleLexer implements \Iterator
      */
     public function key()
     {
-        return($this->position);
+        return ($this->position);
     }
 
     /**

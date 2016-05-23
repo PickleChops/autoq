@@ -15,6 +15,7 @@ class Schedule
 
     private $frequency = self::NO_FREQUENCY;
     private $date = false;
+    private $time = false;
     private $minute = false;
     private $hour = false;
     private $day = false;
@@ -142,6 +143,39 @@ class Schedule
         return $this;
     }
 
+    /**
+     * @return boolean
+     */
+    public function isTime()
+    {
+        return $this->time;
+    }
+
+    /**
+     * @param boolean $time
+     * @return $this
+     */
+    public function setTime($time)
+    {
+        $this->time = $time;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getTime() {
+        return $this->time;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFlexible()
+    {
+        return $this->flexible;
+    }
+    
     /**
      * Reset the schedule
      */

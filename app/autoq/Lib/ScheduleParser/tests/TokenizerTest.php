@@ -24,7 +24,15 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
         //First token
         $this->assertEquals("The", $tokenizer->next());
 
+        //Current token
+        $this->assertEquals("quick", $tokenizer->current());
+
+        //Current token
+        $this->assertEquals("brown", $tokenizer->peek());
+
+
         //No prev
+        $tokenizer->rewind();
         $tokenizer->prev();
         $this->assertEquals(false, $tokenizer->prev());
 

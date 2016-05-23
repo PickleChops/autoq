@@ -23,7 +23,6 @@ class ScheduleParser
      */
     public function parse()
     {
-
         while (($token = $this->lexer->next())) {
 
             $tokenType = $token['type'];
@@ -43,9 +42,14 @@ class ScheduleParser
                 $this->schedule->setTime($token['normalised']);
             }
 
+            //If a time is specified add to schedule
+            if ($tokenType == ScheduleLexer::TYPE_KEYWORD_DAY) {
+                $this->schedule->setDay($token['normalised']);
+            }
+
             //if an integer is found check for minutes
-            if ($tokenType == ScheduleLexer::TYPE_TIME) {
-                $this->lookForMinutes();
+            if ($tokenType == ScheduleLexer::TYPE_POSITIVE_INT) {
+                $this->lookForMinutes($token['normalised']);
             }
 
         }
@@ -75,12 +79,15 @@ class ScheduleParser
     private function lookForFrequency()
     {
 
-        if (($nextToken = $this->lexer->peek()) !== false) {
+        if (($nextToken = $this->lexer->current()) !== false) {
 
             $nextTokenType = $nextToken['type'];
 
-
             switch ($nextTokenType) {
+
+                case ScheduleLexer::TYPE_KEYWORD_DURATION_HOUR:
+                    $this->schedule->setFrequency(Schedule::HOURLY);
+                    break;
 
                 case ScheduleLexer::TYPE_KEYWORD_DURATION_DAY:
                     $this->schedule->setFrequency(Schedule::DAILY);
@@ -101,18 +108,19 @@ class ScheduleParser
 
     /**
      * Look for a frequency
+     * @param $minutes
      */
-    private function lookForMinutes()
+    private function lookForMinutes($minutes)
     {
 
-        if (($nextToken = $this->lexer->peek()) !== false) {
+        if (($nextToken = $this->lexer->current()) !== false) {
 
             $nextTokenType = $nextToken['type'];
 
             if ($nextTokenType == ScheduleLexer::TYPE_FREE_TEXT) {
                 //@todo This probably ought to be in the lexer
                 if (in_array(strtolower($nextToken['normalised']), ['mins', 'minute', 'minutes'])) {
-                    $this->schedule->setMinute($this->lexer->current());
+                    $this->schedule->setMinute($minutes);
                 }
             }
 

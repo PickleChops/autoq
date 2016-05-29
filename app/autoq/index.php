@@ -3,16 +3,21 @@
 //Start up code
 require __DIR__ . "/bootstrap/httpStart.php";
 
-//Get the Router service
+/**
+ * @var $router \Phalcon\Mvc\Router
+ */
 $router = $di->get('router');
 
 //Process routes
 $router->handle();
 
-//Get the dispatcher
+/**
+ * @var $dispatcher \Phalcon\Mvc\Dispatcher
+ */
 $dispatcher = $di->get('dispatcher');
 
 // Pass the processed router parameters to the dispatcher
+$dispatcher->setNamespaceName($router->getNamespaceName());
 $dispatcher->setControllerName($router->getControllerName());
 $dispatcher->setActionName($router->getActionName());
 $dispatcher->setParams($router->getParams());

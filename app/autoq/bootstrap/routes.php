@@ -10,6 +10,7 @@ $router->setUriSource(\Phalcon\Mvc\Router::URI_SOURCE_SERVER_REQUEST_URI);
 // Set 404 paths
 $router->notFound(
     array(
+        'namespace'  => 'Autoq\Controllers',
         "controller" => "Error404",
         "action"     => "index"
     )
@@ -18,6 +19,7 @@ $router->notFound(
 $router->addGet(
     "/jobs/",
     array(
+        'namespace'  => 'Autoq\Controllers',
         'controller' => 'Job',
         'action'     => 'getAll'
     )
@@ -26,6 +28,7 @@ $router->addGet(
 $router->addPost(
     "/jobs/",
     array(
+        'namespace'  => 'Autoq\Controllers',
         'controller' => 'Job',
         'action'     => 'add'
     )
@@ -35,6 +38,7 @@ $router->addPost(
 $router->addGet(
     "/jobs/:int",
     array(
+        'namespace'  => 'Autoq\Controllers',
         'controller' => 'Job',
         'action'     => 'get',
         'id'         => 1
@@ -44,6 +48,7 @@ $router->addGet(
 $router->addDelete(
     "/jobs/:int",
     array(
+        'namespace'  => 'Autoq\Controllers',
         'controller' => 'Job',
         'action'     => 'delete',
         'id'         => 1
@@ -53,6 +58,7 @@ $router->addDelete(
 $router->addPut(
     "/jobs/:int",
     array(
+        'namespace'  => 'Autoq\Controllers',
         'controller' => 'Job',
         'action'     => 'put',
         'id'         => 1
@@ -62,11 +68,10 @@ $router->addPut(
 $router->addGet(
     "/queue/",
     array(
+        'namespace'  => 'Autoq\Controllers',
         'controller' => 'Queue',
         'action'     => 'getAll'
     )
 );
-
-
 
 return $router;

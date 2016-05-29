@@ -1,11 +1,16 @@
 {
   "require-dev": {
     "phalcon/devtools": "dev-master",
-    "phpunit/phpunit": "^4.8"
-
+    "phpunit/phpunit": "5.3.*",
+    "guzzlehttp/guzzle": "~6.0"
   },
   "require": {
     "vlucas/phpdotenv": "^2.2",
-    "symfony/yaml": "^3.0",
+    "symfony/yaml": "^3.0"
+
+  },
+
+  "autoload": {
+    "psr-4": {"Autoq\\": "./"}
   }
 }

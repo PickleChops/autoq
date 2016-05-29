@@ -1,4 +1,4 @@
-name: Sample job updated for sure
+name: This is sample job 1
 connection: default
 schedule: Every Tuesday at 9am
 query: |

@@ -1,5 +1,7 @@
 <?php
 
+namespace Autoq\Controllers;
+use Autoq\Data\Jobs\JobsRepository;
 
 /**
  * Class JobController Endpoints for /job/ api calls
@@ -14,7 +16,7 @@ class JobController extends BaseController
     private $apiHelper;
 
     /**
-     * @var $repo \Autoq\Data\Jobs\JobsRepository
+     * @var $repo JobsRepository
      */
     private $repo;
 
@@ -25,7 +27,7 @@ class JobController extends BaseController
     public function initialize()
     {
         $this->apiHelper = $this->di->get('apiHelper');
-        $this->repo = $this->di->get(\Autoq\Data\Jobs\JobsRepository::class, [$this->getDI()]);
+        $this->repo = $this->di->get(JobsRepository::class, [$this->getDI()]);
     }
 
     /**

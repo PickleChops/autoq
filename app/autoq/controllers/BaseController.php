@@ -1,5 +1,7 @@
 <?php
 
+namespace Autoq\Controllers;
+
 use Phalcon\Mvc\Controller;
 
 

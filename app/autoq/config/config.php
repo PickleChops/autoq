@@ -3,6 +3,11 @@
 use Phalcon\Config;
 
 $settings = [
+    "app" => [
+        'api_host' => getenv('APP_API_HOST')
+    ],
+    
+    
     "database" => [
         "adapter" => \Phalcon\Db\Adapter\Pdo\Mysql::class,
         "host" => getenv('DATABASE_HOST'),

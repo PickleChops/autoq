@@ -16,10 +16,7 @@ class CLI
         //Start up code
         $this->di = require __DIR__ . "/bootstrap/cliStart.php";
 
-        //Setup error/exception handler
-        \Autoq\Lib\Debug\Debug::initialize(true, STDOUT);
-
-        //Dispatch to relevant task
+          //Dispatch to relevant task
         global $argv;
         $this->dispatch($argv);
     }

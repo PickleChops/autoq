@@ -26,7 +26,7 @@ $di->set(
 );
 
 /**
- * Bind in our api helper
+ * Bind in db connection service
  */
 $di->set('dBConnectionService', function () use ($di) {
     return new \Autoq\Services\DatabaseConnections($di);

@@ -1,5 +1,7 @@
 <?php
 
+namespace Autoq\Controllers;
+
 class Error404Controller extends BaseController
 {
     public function indexAction()

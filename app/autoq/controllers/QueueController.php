@@ -1,5 +1,7 @@
 <?php
 
+namespace Autoq\Controllers;
+use Autoq\Data\Queue\QueueRepository;
 
 /**
  * Class QueueController Endpoints for /queue/ api calls
@@ -12,7 +14,7 @@ class QueueController extends BaseController
     private $apiHelper;
 
     /**
-     * @var $repo \Autoq\Data\Queue\QueueRepository
+     * @var $repo QueueRepository
      */
     private $repo;
 
@@ -23,7 +25,7 @@ class QueueController extends BaseController
     public function initialize()
     {
         $this->apiHelper = $this->di->get('apiHelper');
-        $this->repo = $this->di->get(\Autoq\Data\Queue\QueueRepository::class, [$this->getDI()]);
+        $this->repo = $this->di->get(QueueRepository::class, [$this->getDI()]);
 
     }
 
@@ -54,7 +56,6 @@ class QueueController extends BaseController
     
         $limit = $this->request->getQuery('limit','int', null);
         
-
         if (($queueItems = $this->repo->getAll($limit)) === false) {
             $response = $this->apiHelper->responseError("Unable to read queue items");
         } else {

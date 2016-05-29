@@ -22,3 +22,14 @@ services:
   autoq:
     volumes:
     - ./infrastructure/supervisord/config/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+  util:
+      build: ./infrastructure/php-cli
+      image: skytsar/autoq-util
+      volumes:
+      - ./app/autoq:/usr/src/autoq
+      depends_on:
+      - mysql
+      working_dir: /usr/src/autoq
+      hostname: utils
+
+

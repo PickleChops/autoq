@@ -28,10 +28,11 @@ before_install:
     - chmod +x docker-compose
     - sudo mv docker-compose /usr/local/bin
     - make up
-    - docker ps -a
 
 script:
     - docker version
     - docker-compose version
+    - make tests
+
 
 

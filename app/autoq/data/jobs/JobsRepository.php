@@ -148,11 +148,11 @@ class JobsRepository extends BaseRepository
             $row = $this->dBConnection->fetchOne("SELECT id FROM job_defs where id = :id", Db::FETCH_ASSOC, ['id' => $id]);
 
         } catch (Exception $e) {
-            $this->logger->error("Unable to fetch job with id: $id");
+            $this->logger->error("Unable to read job with id: $id");
             return false;
         }
 
-        return array_key_exists('id', $row);
+        return $row ? array_key_exists('id', $row) : false;
 
     }
 

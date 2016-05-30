@@ -8,25 +8,14 @@ use Autoq\Data\Queue\QueueRepository;
  */
 class QueueController extends BaseController
 {
-    /**
-     * @var $apiHelper \Autoq\Services\ApiHelper
-     */
-    private $apiHelper;
-
-    /**
-     * @var $repo QueueRepository
-     */
-    private $repo;
-
 
     /**
      * Run on contruction by Phalcon
      */
     public function initialize()
     {
-        $this->apiHelper = $this->di->get('apiHelper');
-        $this->repo = $this->di->get(QueueRepository::class, [$this->getDI()]);
-
+        //Indicate the repo to use for this contoller
+        parent::initialize(QueueRepository::class);
     }
 
     /**

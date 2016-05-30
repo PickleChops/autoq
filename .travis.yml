@@ -1,4 +1,4 @@
-
+#With help from
 #https://graysonkoonce.com/managing-docker-and-docker-compose-versions-on-travis-ci/
 
 sudo: requried
@@ -11,8 +11,8 @@ services:
 
 env:
     global:
-        - DOCKER_VERSION=1.10.1-0~trusty
-        - DOCKER_COMPOSE_VERSION=1.6.0
+        - DOCKER_VERSION=1.11.1-0~trusty
+        - DOCKER_COMPOSE_VERSION=1.6.2
         - COMPOSE_CONFIG_FILES="-f base.yml -f test.yml"
 
 before_install:
@@ -27,11 +27,16 @@ before_install:
     - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
     - chmod +x docker-compose
     - sudo mv docker-compose /usr/local/bin
-    - make up
 
-script:
+    # Setup build
+    - cp ./app/autoq/travis.env ./app/autoq/.env
+    - make up
+    - make compose
     - docker version
     - docker-compose version
+
+script:
+    - docker ps -a
     - make tests
 
 

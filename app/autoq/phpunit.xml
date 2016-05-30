@@ -1,0 +1,10 @@
+<phpunit bootstrap="./bootstrap/testsStart.php">
+    <testsuites>
+        <testsuite name="autoq">
+            <directory>Tests</directory>
+        </testsuite>
+        <testsuite name="ScheduleParser">
+            <directory>Lib/ScheduleParser/Tests</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

@@ -2,7 +2,6 @@
 
 namespace Autoq\Services;
 
-
 use Phalcon\Config;
 use Phalcon\Db\Adapter\Pdo;
 use Phalcon\Di;

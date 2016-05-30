@@ -1,6 +1,7 @@
 <?php
 
 namespace Autoq\Controllers;
+
 use Autoq\Data\Jobs\JobsRepository;
 
 /**
@@ -8,26 +9,14 @@ use Autoq\Data\Jobs\JobsRepository;
  */
 class JobController extends BaseController
 {
-    private $debugJobAdd = false;
-
-    /**
-     * @var $apiHelper \Autoq\Services\ApiHelper
-     */
-    private $apiHelper;
-
-    /**
-     * @var $repo JobsRepository
-     */
-    private $repo;
-
 
     /**
      * Run on contruction by Phalcon
      */
     public function initialize()
     {
-        $this->apiHelper = $this->di->get('apiHelper');
-        $this->repo = $this->di->get(JobsRepository::class, [$this->getDI()]);
+        //Indicate the repo to use for this contoller
+        parent::initialize(JobsRepository::class);
     }
 
     /**
@@ -36,14 +25,14 @@ class JobController extends BaseController
      */
     public function addAction()
     {
-        if ($this->request->isPost() || $this->checkForDebugOverride()) {
+        if ($this->request->isPost()) {
 
             /**
              * @var $jobValidator \Autoq\Services\ValidateJobDefintion
              */
             $jobValidator = $this->di->get('jobValidator');
 
-            $rawDefinition = $this->getPostBody();
+            $rawDefinition = $this->request->getRawBody();
 
             //Run some basic checks on the defintion
             if ($jobValidator->validateDefiniton($rawDefinition)) {
@@ -80,8 +69,8 @@ class JobController extends BaseController
     {
         if (($jobDefinition = $this->repo->getByID($jobID)) === false) {
             $response = $this->apiHelper->responseError("Unable to read job");
-        } elseif($jobDefinition === []) {
-            $response = $this->apiHelper->responseError("Job with ID: $jobID does not exist");
+        } elseif ($jobDefinition === []) {
+            $response = $this->apiEntityNotFound("Job", $jobID);
 
         } else {
             $response = $this->apiHelper->responseSuccessWithData($jobDefinition);
@@ -118,7 +107,7 @@ class JobController extends BaseController
              */
             $jobValidator = $this->di->get('jobValidator');
 
-            $rawDefinition = $this->getPostBody(); 
+            $rawDefinition = $this->request->getRawBody();
 
             //Run some basic checks on the defintion
             if ($jobValidator->validateDefiniton($rawDefinition)) {
@@ -136,7 +125,7 @@ class JobController extends BaseController
                         }
                     }
                 } else {
-                    $response = $this->apiHelper->responseError("There is no job with id: $jobID");
+                    $response = $this->apiEntityNotFound("Job", $jobID);
                 }
 
             } else {
@@ -151,7 +140,6 @@ class JobController extends BaseController
         return $response;
     }
 
-
     /**
      * Delete an existing job definition
      * @param $jobID
@@ -159,54 +147,17 @@ class JobController extends BaseController
      */
     public function deleteAction($jobID)
     {
-        if ($this->repo->delete($jobID) === false) {
-            $response = $this->apiHelper->responseError("Unable to delete job: $jobID");
+        if ($this->repo->exists($jobID)) {
+
+            if ($this->repo->delete($jobID) === false) {
+                $response = $this->apiHelper->responseError("Unable to delete job: $jobID");
+            } else {
+                $response = $this->apiHelper->responseSuccess();
+            }
         } else {
-            $response = $this->apiHelper->responseSuccess();
+            $response = $this->apiEntityNotFound("Job", $jobID);
         }
-        
+
         return $response;
     }
-
-    /**
-     * Fetch the Yaml defintion
-     * @return bool|string
-     */
-    private function getPostBody()
-    {
-        //The Yaml definition is in the post body or provided by debug
-        return $this->debugJobAdd ? $this->debugJobAdd : $this->request->getRawBody();
-    }
-
-    /**
-     * Debug function allow request without POST
-     * @return bool
-     */
-    private function checkForDebugOverride()
-    {
-        if (getenv('DEBUG_OVERRIDE_JOB_ADD_POST')) {
-
-            $this->debugJobAdd = <<<YAML
-name: Sample job 
-connection: default
-schedule: Every Tuesday at 9am
-query: |
-    Select * from massive_table
-    where some_condition is true
-    group by 1
-outputs:
-  - type: s3
-    bucket: an_s3_bucket
-    format: csv
-  - type: email
-    address: boydi@boydi.com
-    format: html
-YAML;
-
-            return true;
-        }
-
-        return false;
-    }
-
 }

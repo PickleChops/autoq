@@ -43,7 +43,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
                 $this->assertEquals("over", $token);
             }
             $pos++;
-            echo $pos;
         }
 
         //All tokens consumed after foreach
@@ -55,8 +54,6 @@ class TokenizerTest extends \PHPUnit_Framework_TestCase
 
         //Peek when no more token
         $this->assertEquals(false, $tokenizer->peek());
-
-
 
     }
 }

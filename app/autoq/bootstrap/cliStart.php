@@ -11,6 +11,6 @@ include __DIR__ . '/../vendor/autoload.php';
 (new \Dotenv\Dotenv(__DIR__ . "/../"))->load();
 
 //Add required services to container and return ioc container
-return require __DIR__  . '/Services.php';
+return require __DIR__  . '/services.php';
 
 

@@ -8,6 +8,6 @@ include __DIR__ . '/../vendor/autoload.php';
 (new \Dotenv\Dotenv(__DIR__ . "/../"))->load();
 
 //Add base services to container
-require __DIR__  . '/Services.php';
+require __DIR__  . '/services.php';
 
 

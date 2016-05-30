@@ -91,7 +91,6 @@ class ValidateJobDefintion
         }
     }
 
-
     /**
      * @param $rawDef
      * @param $message

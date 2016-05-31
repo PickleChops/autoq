@@ -15,6 +15,11 @@ class JobsApiTest extends Autoq_TestCase
 {
 
     /**
+     * @var $client Client
+     */
+    protected $client;
+    
+    /**
      * @beforeClass
      * Truncate underlying job table
      */
@@ -206,46 +211,6 @@ class JobsApiTest extends Autoq_TestCase
 
     }
 
-    /**
-     * Read into memory a YAML file
-     * @param $filename
-     * @return bool|mixed
-     */
-    private function loadDataFileAsYaml($filename)
-    {
-
-        $filepath = __DIR__ . "/data/$filename";
-
-        $data = false;
-
-        try {
-
-            $yaml = new Parser();
-            $data = $yaml->parse(file_get_contents($filepath));
-
-        } catch (ParseException $e) {
-            echo $e->getMessage() . PHP_EOL;
-        }
-
-        return $data;
-    }
-
-    /**
-     * Get file resource for a test data file
-     * @param $filename
-     * @return resource
-     * @throws \Exception
-     */
-    private function getDataFileResource($filename)
-    {
-
-        $filepath = __DIR__ . "/data/$filename";
-
-        if (($fh = fopen($filepath, 'r')) === false) {
-            throw new \Exception("Could not open: $filepath");
-        }
-
-        return $fh;
-    }
+    
 
 }

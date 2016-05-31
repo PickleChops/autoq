@@ -5,5 +5,6 @@ use Autoq\Tests\Autoq_TestCase;
 
 class ValidateJobDefintionTest extends Autoq_TestCase
 {
+    public function
 
 }

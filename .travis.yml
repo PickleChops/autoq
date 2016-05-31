@@ -30,8 +30,8 @@ before_install:
 
     # Setup build
     - cp ./app/autoq/travis.env ./app/autoq/.env
-    - make up
     - make compose
+    - make up
     - docker version
     - docker-compose version
 

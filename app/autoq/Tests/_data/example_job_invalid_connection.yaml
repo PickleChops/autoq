@@ -1,0 +1,12 @@
+name: A sample job
+connection: this_is_wrong
+schedule: Every 4 minutes past the hour
+query: |
+    Select * from massive_table
+    where some_condition is true
+    group by 1
+outputs:
+  - type: s3
+    bucket: an_s3_bucket
+    format: csv
+

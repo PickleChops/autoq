@@ -4,6 +4,8 @@ namespace Autoq\Tests;
 
 use Phalcon\Config;
 use Phalcon\Di;
+use Symfony\Component\Yaml\Exception\ParseException;
+use Symfony\Component\Yaml\Parser;
 
 class Autoq_TestCase extends \PHPUnit_Framework_TestCase
 {
@@ -34,7 +36,7 @@ class Autoq_TestCase extends \PHPUnit_Framework_TestCase
     protected function loadDataFileAsYaml($filename)
     {
 
-        $filepath = __DIR__ . "/data/$filename";
+        $filepath = $this->getTestDataResourceFilePath($filename);
 
         $data = false;
 
@@ -58,13 +60,21 @@ class Autoq_TestCase extends \PHPUnit_Framework_TestCase
      */
     protected function getDataFileResource($filename)
     {
-
-        $filepath = __DIR__ . "/data/$filename";
+        $filepath = $this->getTestDataResourceFilePath($filename);
 
         if (($fh = fopen($filepath, 'r')) === false) {
             throw new \Exception("Could not open: $filepath");
         }
 
         return $fh;
+    }
+
+    /**
+     * @param $filename
+     * @return string
+     */
+    protected function getTestDataResourceFilePath($filename)
+    {
+        return __DIR__ . "/_data/$filename";
     }
 }

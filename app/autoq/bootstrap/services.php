@@ -43,10 +43,10 @@ $di->set(
 );
 
 /**
- * Bind in our job validator
+ * Bind in our job processor
  */
-$di->set('jobValidator', function () {
-    return new \Autoq\Services\ValidateJobDefintion();
+$di->set('jobProcessor', function () {
+    return new \Autoq\Services\JobProcessor\JobDefinitionProcessor();
 });
 
 /**

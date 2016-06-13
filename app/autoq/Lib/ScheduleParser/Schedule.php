@@ -164,7 +164,8 @@ class Schedule
     /**
      * @return bool
      */
-    public function getTime() {
+    public function getTime()
+    {
         return $this->time;
     }
 
@@ -175,7 +176,7 @@ class Schedule
     {
         return $this->flexible;
     }
-    
+
     /**
      * Reset the schedule
      */
@@ -186,8 +187,62 @@ class Schedule
         $this->minute = false;
         $this->hour = false;
         $this->day = false;
-        
+
         return $this;
     }
 
+
+    /**
+     * @return bool
+     */
+    public function isValid()
+    {
+        // @todo tidy this up
+
+        $valid = false;
+
+        if ($this->frequency == self::NO_FREQUENCY) {
+
+            if ($this->date !== false || $this->time !== false) {
+                $valid = true;
+            }
+
+        } elseif ($this->frequency == self::HOURLY) {
+
+            $valid = true;
+
+        } elseif ($this->frequency == self::DAILY) {
+
+            if ($this->time !== false) {
+                $valid = true;
+            }
+
+
+        } elseif ($this->frequency == self::WEEKLY) {
+
+            $valid = true;
+        }
+
+        return $valid;
+    }
+
+
+    /**
+     * @return array
+     */
+    public function toArray()
+    {
+        $data = [];
+
+        $data['frequency'] = $this->frequency;
+        $data['date'] = $this->date;
+        $data['time'] = $this->time;
+        $data['minute'] = $this->minute;
+        $data['hour'] = $this->hour;
+        $data['day'] = $this->day;
+
+        return $data;
+
+    }
+    
 }

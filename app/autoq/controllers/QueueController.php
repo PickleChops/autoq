@@ -25,7 +25,7 @@ class QueueController extends BaseController
      */
     public function getAction($jobID)
     {
-        if (($job = $this->repo->getByID($jobID)) === false) {
+        if (($job = $this->repo->getById($jobID)) === false) {
             $response = $this->apiHelper->responseError("Unable to read job");
         } elseif($job === []) {
             $response = $this->apiHelper->responseError("Job with ID: $jobID does not exist");

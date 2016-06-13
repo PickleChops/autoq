@@ -1,7 +1,10 @@
 <?php
 
 namespace Autoq\Data\Jobs;
+
 use Autoq\Data\Arrayable;
+use Autoq\Lib\ScheduleParser\Schedule;
+use Autoq\Lib\ScheduleParser\ScheduleParser;
 
 /**
  * Class JobDefinition
@@ -10,6 +13,7 @@ class JobDefinition implements Arrayable
 {
     private $id;
     private $name;
+    private $scheduleOriginal;
     private $schedule;
     private $connection;
     private $query;
@@ -28,12 +32,20 @@ class JobDefinition implements Arrayable
     {
         $this->setId($data['id']);
         $this->setName($data['name']);
+        $this->setConnection($data['connection']);
         $this->setQuery($data['query']);
         $this->setCreated($data['created']);
         $this->setUpdated($data['updated']);
-        $this->setSchedule($data['schedule']);
-        $this->setConnection($data['connection']);
+  
+        $this->setScheduleOriginal($data['schedule']);
 
+        $scheduleParser = new ScheduleParser($data['schedule']);
+        if (($schedule = $scheduleParser->parse()) instanceof Schedule) {
+            $this->setSchedule($schedule);
+        } else {
+            throw new \Exception("Unable to parse schedule in " . __CLASS__);
+        }
+        
         if (count($data['outputs'])) {
 
             foreach ($data['outputs'] as $outputData) {
@@ -66,7 +78,7 @@ class JobDefinition implements Arrayable
         $data['query'] = $this->getQuery();
         $data['created'] = $this->getCreated();
         $data['updated'] = $this->getUpdated();
-        $data['schedule'] = $this->getSchedule();
+        $data['schedule'] = $this->getScheduleOriginal();
         $data['connection'] = $this->getConnection();
 
         $data['outputs'] = [];
@@ -150,7 +162,7 @@ class JobDefinition implements Arrayable
     }
 
     /**
-     * @return mixed
+     * @return Schedule
      */
     public function getSchedule()
     {
@@ -158,11 +170,28 @@ class JobDefinition implements Arrayable
     }
 
     /**
-     * @param mixed $schedule
+     * @param Schedule $schedule
      */
-    public function setSchedule($schedule)
+    public function setSchedule(Schedule $schedule)
     {
         $this->schedule = $schedule;
+    }
+
+
+    /**
+     * @return mixed
+     */
+    public function getScheduleOriginal()
+    {
+        return $this->scheduleOriginal;
+    }
+
+    /**
+     * @param $scheduleOriginal
+     */
+    public function setScheduleOriginal($scheduleOriginal)
+    {
+        $this->scheduleOriginal = $scheduleOriginal;
     }
 
     /**

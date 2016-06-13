@@ -13,6 +13,8 @@ abstract class JobItemProcessor
 
     private $rawData;
     private $sanitizedData;
+    private $additionalDefinitionData;
+
     private $messages;
 
     private $isValid = false;
@@ -25,12 +27,12 @@ abstract class JobItemProcessor
     {
         $this->rawData = $rawData;
         $this->messages = new Group();
-        $this->sanitizedData = null;
+        $this->additionalDefinitionData = null;
 
         $this->sanitizedData = $this->sanitize($rawData);
-
         $this->validate($this->sanitizedData);
-        
+
+
         $this->isValid = $this->messages->count() == 0;
     }
 
@@ -62,6 +64,7 @@ abstract class JobItemProcessor
      */
     abstract protected function validate($data);
 
+
     /**
      * @return mixed
      */
@@ -75,7 +78,10 @@ abstract class JobItemProcessor
      */
     protected function addMessageByCode($code)
     {
-        $this->messages->appendMessage(JobProcessorErrors::asMessageObject($code,$this->getFieldName()));
+        $message = JobProcessorErrors::asMessageObject($code);
+        $message->setField($this->getFieldName());
+
+        $this->messages->appendMessage($message);
     }
 
     /**
@@ -83,11 +89,9 @@ abstract class JobItemProcessor
      */
     protected function appendMessages(Group $messages)
     {
-
         foreach ($messages as $message) {
             $this->messages->appendMessage($message);
         }
-
     }
 
     /**
@@ -114,5 +118,29 @@ abstract class JobItemProcessor
         return $this->isValid;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getAdditionalDefinitionData()
+    {
+        return $this->additionalDefinitionData;
+    }
+
+    /**
+     * @param mixed $additionalDefinitionData
+     */
+    public function setAdditionalDefinitionData($additionalDefinitionData)
+    {
+        $this->additionalDefinitionData = $additionalDefinitionData;
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function hasAdditionalDefinitionData()
+    {
+        return $this->additionalDefinitionData !== null;
+    }
 
 }

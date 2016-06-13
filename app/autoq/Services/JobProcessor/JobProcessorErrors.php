@@ -16,8 +16,9 @@ class JobProcessorErrors
     const MSG_NO_OUTPUT = 6;
     const MSG_NO_CONNECTION = 7;
     const MSG_CONNECTION_NOT_DEFAULT = 8;
-    const MSG_JOB_NAME_TOO_LONG = 9;
-
+    const MSG_FIELD_DATA_TOO_LONG = 9;
+    const MSG_UNABLE_TO_PARSE_SCHEDULE = 10;
+ 
     static private $msgText = [
 
         self::MSG_UNKNOWN_ERROR => "Unknown error code",
@@ -28,17 +29,17 @@ class JobProcessorErrors
         self::MSG_NO_OUTPUT => "No output(s) provided",
         self::MSG_NO_CONNECTION => "No connection provided",
         self::MSG_CONNECTION_NOT_DEFAULT => "Only the default connection is currently supported'",
-        self::MSG_JOB_NAME_TOO_LONG => "Job names must be 255 characters or less"
+        self::MSG_FIELD_DATA_TOO_LONG => "Field data must be 255 characters or less",
+        self::MSG_UNABLE_TO_PARSE_SCHEDULE => "Unable to parse the schedule"
     ];
 
     /**
      * Helper Factory for messages
      * @param $codeOrMsgString
-     * @param null $field
-     * @param null $type
+     * @param array $params
      * @return Message
      */
-    public static function asMessageObject($codeOrMsgString, $field = null, $type = null)
+    public static function asMessageObject($codeOrMsgString, $params = [])
     {
 
         if (is_int($codeOrMsgString)) {
@@ -48,17 +49,17 @@ class JobProcessorErrors
                 $code = self::MSG_UNKNOWN_ERROR;
             }
 
-            $messageString = self::$msgText[$code];
+            $messageString = vsprintf(self::$msgText[$code], $params);
 
         } else {
-            $messageString = (string)$codeOrMsgString;
+            $messageString = vsprintf((string)$codeOrMsgString, $params);
             $code = null;
         }
 
         return new Message(
             $messageString,
-            $field,
-            $type,
+            null,
+            null,
             $code
         );
     }

@@ -18,7 +18,7 @@ class JobsApiTest extends Autoq_TestCase
      * @var $client Client
      */
     protected $client;
-    
+
     /**
      * @beforeClass
      * Truncate underlying job table
@@ -74,7 +74,7 @@ class JobsApiTest extends Autoq_TestCase
         $resource = $this->getDataFileResource('example_job_1.yaml');
         $rawResponse = $this->client->request('POST', '/jobs/', ['body' => $resource]);
         $response = json_decode($rawResponse->getBody());
-        
+
         $this->assertObjectHasAttribute('status', $response);
         $this->assertEquals('success', $response->status);
 
@@ -211,6 +211,5 @@ class JobsApiTest extends Autoq_TestCase
 
     }
 
-    
 
 }

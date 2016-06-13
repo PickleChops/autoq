@@ -1,11 +1,11 @@
 <?php
 date_default_timezone_set('Europe/London');
 
-//Setup error/exception handler
-\Autoq\Lib\Debug\Debug::initialize(true, STDOUT);
-
 //Include the composer autoloader
 include __DIR__ . '/../vendor/autoload.php';
+
+//Setup error/exception handler
+\Autoq\Lib\Debug\Debug::initialize(true, STDOUT);
 
 //Load up .env environment support
 (new \Dotenv\Dotenv(__DIR__ . "/../"))->load();

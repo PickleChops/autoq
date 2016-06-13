@@ -28,20 +28,20 @@ class JobController extends BaseController
         if ($this->request->isPost()) {
 
             /**
-             * @var $jobValidator \Autoq\Services\ValidateJobDefintion
+             * @var $jobValidator \Autoq\Services\JobProcessor\JobDefinitionProcessor
              */
-            $jobValidator = $this->di->get('jobValidator');
+            $jobValidator = $this->di->get('jobProcessor');
 
             $rawDefinition = $this->request->getRawBody();
 
             //Run some basic checks on the defintion
-            if ($jobValidator->validateDefiniton($rawDefinition)) {
+            if ($jobValidator->processJobDefiniton($rawDefinition)) {
 
-                if (($jobID = $this->repo->save($jobValidator->getDefAsYaml())) === false) {
+                if (($jobID = $this->repo->save($jobValidator->getValidatedDefinition())) === false) {
                     $response = $this->apiHelper->responseError("Unable to add job");
                 } else {
 
-                    if (($jobDefinition = $this->repo->getByID($jobID)) === false) {
+                    if (($jobDefinition = $this->repo->getById($jobID)) === false) {
                         $response = $this->apiHelper->responseError("Job added but unable to read!");
                     } else {
                         $response = $this->apiHelper->responseSuccessWithData($jobDefinition);
@@ -50,7 +50,7 @@ class JobController extends BaseController
 
             } else {
                 //Send back validation error
-                $response = $this->apiHelper->responseError($jobValidator->getErrorMsg());
+                $response = $this->apiHelper->responseError($jobValidator->getFirstError());
             }
 
         } else {
@@ -67,7 +67,7 @@ class JobController extends BaseController
      */
     public function getAction($jobID)
     {
-        if (($jobDefinition = $this->repo->getByID($jobID)) === false) {
+        if (($jobDefinition = $this->repo->getById($jobID)) === false) {
             $response = $this->apiHelper->responseError("Unable to read job");
         } elseif ($jobDefinition === []) {
             $response = $this->apiEntityNotFound("Job", $jobID);
@@ -103,22 +103,22 @@ class JobController extends BaseController
         if ($this->request->isPut()) {
 
             /**
-             * @var $jobValidator \Autoq\Services\ValidateJobDefintion
+             * @var $jobProcessor \Autoq\Services\JobProcessor\JobDefinitionProcessor
              */
-            $jobValidator = $this->di->get('jobValidator');
+            $jobProcessor = $this->di->get('jobProcessor');
 
             $rawDefinition = $this->request->getRawBody();
 
             //Run some basic checks on the defintion
-            if ($jobValidator->validateDefiniton($rawDefinition)) {
+            if ($jobProcessor->processJobDefiniton($rawDefinition)) {
 
                 if ($this->repo->exists($jobID)) {
 
-                    if ($this->repo->update($jobID, $jobValidator->getDefAsYaml()) === false) {
+                    if ($this->repo->update($jobID, $jobProcessor->getValidatedDefinition()) === false) {
                         $response = $this->apiHelper->responseError("Unable to update job: $jobID");
                     } else {
 
-                        if (($jobDefinition = $this->repo->getByID($jobID)) === false) {
+                        if (($jobDefinition = $this->repo->getById($jobID)) === false) {
                             $response = $this->apiHelper->responseError("Job updated but unable to read!");
                         } else {
                             $response = $this->apiHelper->responseSuccessWithData($jobDefinition);
@@ -130,7 +130,7 @@ class JobController extends BaseController
 
             } else {
                 //Send back validation error
-                $response = $this->apiHelper->responseError($jobValidator->getErrorMsg());
+                $response = $this->apiHelper->responseError($jobProcessor->getFirstError());
             }
 
         } else {

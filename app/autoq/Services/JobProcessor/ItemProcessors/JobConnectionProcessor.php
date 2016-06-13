@@ -33,7 +33,10 @@ class JobConnectionProcessor extends JobItemProcessor
             $this->addMessageByCode(JobProcessorErrors::MSG_CONNECTION_NOT_DEFAULT);
         }
 
+        if (!ItemValidations::maxLength($data, 255)) {
+            $this->addMessageByCode(JobProcessorErrors::MSG_FIELD_DATA_TOO_LONG);
+        }
+
     }
-
-
+    
 }

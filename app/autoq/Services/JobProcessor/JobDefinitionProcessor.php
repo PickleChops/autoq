@@ -4,6 +4,7 @@ namespace Autoq\Services\JobProcessor;
 
 use Autoq\Services\JobProcessor\ItemProcessors\JobConnectionProcessor;
 use Autoq\Services\JobProcessor\ItemProcessors\JobNameProcessor;
+use Autoq\Services\JobProcessor\ItemProcessors\JobScheduleProcessor;
 use Phalcon\Validation\Message\Group;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Parser;
@@ -43,7 +44,9 @@ class JobDefinitionProcessor
         }
 
         if (($parsedYaml = $this->parseYaml($rawDefinition, $message)) === false) {
-            $this->messages->appendMessage(JobProcessorErrors::asMessageObject($message, null, JobProcessorErrors::TYPE_YAML_ERROR));
+            $message = JobProcessorErrors::asMessageObject($message);
+            $message->setCode(JobProcessorErrors::TYPE_YAML_ERROR);
+            $this->messages->appendMessage($message);
             return false;
         }
 
@@ -65,18 +68,30 @@ class JobDefinitionProcessor
     private function processParsedYaml($data)
     {
 
+        //Name
+
         $nameProcessor = new JobNameProcessor($data['name']);
 
         if (!$nameProcessor->getIsValid()) {
             $this->appendMessages($nameProcessor->getMessages());
         }
 
+        //Connection
+
         $connectionProcessor = new JobConnectionProcessor($data['connection']);
 
         if (!$connectionProcessor->getIsValid()) {
             $this->appendMessages($connectionProcessor->getMessages());
         }
-        
+
+        //Schedule
+
+        $scheduleProcessor = new JobScheduleProcessor($data['schedule']);
+
+        if (!$scheduleProcessor->getIsValid()) {
+            $this->appendMessages($scheduleProcessor->getMessages());
+        }
+
         return $this->messages->count() == 0;
 
     }

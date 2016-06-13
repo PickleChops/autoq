@@ -16,7 +16,7 @@ class CLI
         //Start up code
         $this->di = require __DIR__ . "/bootstrap/cliStart.php";
 
-          //Dispatch to relevant task
+        //Dispatch to relevant task
         global $argv;
         $this->dispatch($argv);
     }
@@ -34,7 +34,7 @@ class CLI
         $processToRun = $argv[1];
 
         $argsForTask = array_slice($argv, 2);
-        
+
         $taskWithNS = "Autoq\\CLI\\$processToRun";
 
         if (class_exists($taskWithNS)) {

@@ -56,7 +56,7 @@ class ScheduleParser
 
         $this->resolveConflicts();
 
-        return $this->schedule;
+        return $this->schedule->isValid() ? $this->schedule : false;
 
     }
 

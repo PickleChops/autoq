@@ -1,6 +1,6 @@
 name: This is sample job 1
 connection: default
-schedule: Every Tuesday at 9am
+schedule: every day at 4pm
 query: |
     Select * from massive_table
     where some_condition is true

@@ -59,5 +59,15 @@ class ScheduleParserTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('13:00',$schedule->getTime());
 
     }
+
+    public function testNotASchedule()
+    {
+        $schedule = (new ScheduleParser('Not a schedule'))->parse();
+        
+        // Assertions
+        $this->assertTrue($schedule === false);
+
+
+    }
     
 }

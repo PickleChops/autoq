@@ -16,8 +16,13 @@ class ScheduleLexer implements \Iterator
     const TYPE_KEYWORD_DURATION_MONTH = 'duration_month';
     const TYPE_KEYWORD_DAY = 'day';
     const TYPE_KEYWORD_MONTH = 'month';
+    const TYPE_KEYWORD_ASAP = 'asap';
 
     private $keywords = [
+        
+        self::TYPE_KEYWORD_ASAP => [
+            'now', 'asap'
+        ],
 
         self::TYPE_KEYWORD_FREQUENCY => [
             'Every', 'Each'

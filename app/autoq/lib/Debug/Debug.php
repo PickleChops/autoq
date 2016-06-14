@@ -109,7 +109,7 @@ class Debug
         fwrite($this->stream, $this->formatResponseForStream($errorDetails));
 
         exit(1);
-        
+
     }
 
     private function formatResponseForStream($errorDetails) {

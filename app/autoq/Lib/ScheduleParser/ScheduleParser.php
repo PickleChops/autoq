@@ -52,6 +52,11 @@ class ScheduleParser
                 $this->lookForMinutes($token['normalised']);
             }
 
+            //if an integer is found check for minutes
+            if ($tokenType == ScheduleLexer::TYPE_KEYWORD_ASAP) {
+                $this->schedule->setAsap(true);
+            }
+
         }
 
         $this->resolveConflicts();
@@ -71,6 +76,10 @@ class ScheduleParser
            $this->schedule->reset()->setDate($date);
         }
 
+        //If ASAP found ignore others
+        if (($asap = $this->schedule->getAsap()) !== false) {
+            $this->schedule->reset()->setAsap($asap);
+        }
     }
 
     /**

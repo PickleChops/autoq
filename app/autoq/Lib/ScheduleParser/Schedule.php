@@ -19,6 +19,7 @@ class Schedule
     private $minute = false;
     private $hour = false;
     private $day = false;
+    private $asap = false;
 
 
     /**
@@ -197,7 +198,7 @@ class Schedule
      */
     public function isValid()
     {
-        // @todo tidy this up
+        // @todo implement properly
 
         $valid = false;
 
@@ -226,23 +227,21 @@ class Schedule
         return $valid;
     }
 
+    /**
+     * @return boolean
+     */
+    public function getAsap()
+    {
+        return $this->asap;
+    }
 
     /**
-     * @return array
+     * @param boolean $asap
      */
-    public function toArray()
+    public function setAsap($asap)
     {
-        $data = [];
-
-        $data['frequency'] = $this->frequency;
-        $data['date'] = $this->date;
-        $data['time'] = $this->time;
-        $data['minute'] = $this->minute;
-        $data['hour'] = $this->hour;
-        $data['day'] = $this->day;
-
-        return $data;
-
+        $this->asap = $asap;
     }
-    
+
+
 }

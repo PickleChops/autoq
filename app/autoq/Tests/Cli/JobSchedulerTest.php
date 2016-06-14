@@ -5,12 +5,22 @@ namespace Autoq\Tests\Cli;
 use Autoq\Cli\Lib\JobScheduler;
 use Autoq\Lib\ScheduleParser\Schedule;
 use Autoq\Tests\Autoq_TestCase;
+use Phalcon\Config;
+use Phalcon\Logger\Adapter\Stream;
 
 class JobSchedulerTest extends Autoq_TestCase
 {
     public function testTimeOnlySchedule()
     {
-        $jobScheduler = new JobScheduler();
+        /**
+         * @var $log Stream
+         */
+        $log = $this->getMockBuilder(Stream::class)
+            ->setConstructorArgs(['php://stderr'])
+            ->setMethods(['log', 'error'])->getMock();
+
+
+        $jobScheduler = new JobScheduler(self::$config, $log);
 
         $jobScheduler->setTimeHorizon(3600);
 

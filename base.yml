@@ -1,14 +1,6 @@
 version: '2'
 
 services:
-  autoq:
-    build: ./infrastructure/supervisord
-    image: skytsar/supervisord
-    volumes:
-    - ./app/autoq:/usr/src/autoq
-    working_dir: /usr/src/autoq
-    depends_on:
-    - mysql
   api:
     build: ./infrastructure/nginx
     image: skytsar/nginx
@@ -49,5 +41,26 @@ services:
     volumes:
     - ./app/autoqctl/src/autoqctl:/go/src/autoqctl
     working_dir: /go/src/autoqctl
+  basephp:
+    build: ./infrastructure/php-cli
+    image: skytsar/autoq-basephp
+    volumes:
+    - ./app/autoq:/usr/src/autoq
+    working_dir: /usr/src/autoq
+  utils:
+    extends:
+      service: basephp
+    depends_on:
+    - mysql
+    hostname: utils
+  scheduler:
+    extends:
+      service: basephp
+    depends_on:
+    - mysql
+    command: [php, cli.php, Scheduler]
+
+
+
 
 

@@ -30,12 +30,19 @@ class Scheduler extends CliBase
     public function __construct(Di $di, Array $argv)
     {
         parent::__construct($di, $argv);
+        
+        $this->log->info("Scheduler started");
 
         $this->jobsRepo = $this->di->get(JobsRepository::class, [$di]);
         $this->queueRepo = $this->di->get(QueueRepository::class, [$di]);
 
-        $this->main();
 
+        //Poll database looking for new jobs to schedule
+        while(true) {
+            $this->main();
+            sleep($this->config->app->scheduler_sleep);
+        }
+        
     }
 
     /**
@@ -43,14 +50,18 @@ class Scheduler extends CliBase
      */
     public function main()
     {
-        $jobScheduler = new JobScheduler();
+        $jobScheduler = new JobScheduler($this->config, $this->log);
 
         //Get the currently defined jobs
 
+        $this->log->debug("Looking for job definitions");
+        
         /**
          * @var $jobs JobDefinition[]
          */
         $jobs = $this->jobsRepo->getAll();
+        
+        $this->log->debug(count($jobs) . " job definitions found");
 
         // Loop through the jobs looking for jobs that are ready to schedule
 

@@ -4,7 +4,9 @@ use Phalcon\Config;
 
 $settings = [
     "app" => [
-        'api_host' => getenv('APP_API_HOST')
+        'api_host' => getenv('APP_API_HOST'),
+        'scheduler_horizon' => getenv('APP_SCHEDULER_HORIZON'),
+        'scheduler_sleep' => getenv('APP_SCHEDULER_SLEEP')
     ],
     
     

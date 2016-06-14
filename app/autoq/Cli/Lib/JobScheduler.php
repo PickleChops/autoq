@@ -3,16 +3,26 @@
 namespace Autoq\Cli\Lib;
 
 use Autoq\Lib\ScheduleParser\Schedule;
+use Phalcon\Config;
+use Phalcon\Logger\Adapter\Stream;
 
 class JobScheduler
 {
+
+    private $config;
+    private $log;
+
     private $timeHorizon;
 
     /**
      * JobScheduler constructor.
+     * @param Config $config
+     * @param Stream $log
      */
-    public function __construct()
+    public function __construct(Config $config, Stream $log)
     {
+        $this->config = $config;
+        $this->log = $log;
     }
 
     /**
@@ -23,9 +33,9 @@ class JobScheduler
     public function isJobReadyToSchedule(Schedule $schedule)
     {
         $ready = false;
-        
+
         $now = time();
-        
+
         switch ($schedule->getFrequency()) {
 
             case Schedule::NO_FREQUENCY:
@@ -42,7 +52,7 @@ class JobScheduler
                 break;
 
         }
-        
+
         return $ready;
 
     }
@@ -51,20 +61,32 @@ class JobScheduler
      * @param Schedule $schedule
      * @param $now
      * @return bool
+     * @throws \Exception
      */
-    private function isReadyNoFrequency(Schedule $schedule, $now) {
-        
+    private function isReadyNoFrequency(Schedule $schedule, $now)
+    {
+
+        //If this is an ASAP schedule then this job is ready to go
+        if ($schedule->getAsap() === true) {
+            return true;
+        }
+
+        if ($schedule->getDate() && $schedule->getTime()) {
+            $this->log->error("No date or time provided for a 'No Frequency' schedule ");
+            return false;
+        }
+
         $date = $schedule->getDate() !== false ? $schedule->getDate() : date('d-M-y', $now);
         $time = $schedule->getTime() !== false ? $schedule->getTime() : '00:00';
-        
+
         $runTime = strtotime("$date $time");
-        
+
         $readyToSchedule = $now + $this->getTimeHorizon() >= $runTime;
-        
+
         return $readyToSchedule;
     }
-    
-    
+
+
     /**
      * @return mixed
      */

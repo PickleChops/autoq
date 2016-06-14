@@ -5,6 +5,7 @@ namespace Autoq\Cli;
 use Autoq\Services\DatabaseConnections;
 use Phalcon\Config;
 use Phalcon\Di;
+use Phalcon\Logger\Adapter\Stream;
 
 abstract class CliBase
 {
@@ -25,6 +26,12 @@ abstract class CliBase
     protected $config;
 
     /**
+     * @var $log Stream
+     */
+    protected $log;
+
+
+    /**
      * Scheduler constructor.
      * @param Di $di
      * @param array $argv
@@ -33,6 +40,7 @@ abstract class CliBase
     {
         $this->di = $di;
         $this->config = $this->di->get('config');
+        $this->log = $this->di->get('log');
         $this->dBConnectionService = $this->di->get('dBConnectionService');
     }
     

@@ -36,7 +36,7 @@ class QueueRepository extends BaseRepository
      * @param $id
      * @return array
      */
-    public function getByID($id)
+    public function getById($id)
     {
         try {
             $row = $this->dBConnection->fetchOne("SELECT * FROM job_queue where id = :id", Db::FETCH_ASSOC, ['id' => $id]);

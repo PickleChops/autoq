@@ -4,18 +4,9 @@ namespace Autoq\Cli;
 
 use Phalcon\Di;
 
-class Runner
+class Sender extends CliBase
 {
-
-    protected $di;
-
-    public function __construct(Di $di, Array $argv)
-    {
-        $this->di = $di;
-        
-        $this->main();
-
-    }
+    
 
     /**
      * Off we go

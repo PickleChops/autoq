@@ -82,7 +82,7 @@ class JobsApiTest extends Autoq_TestCase
 
         $data = $response->data;
 
-        $this->assertTrue(is_numeric($data->id) && (int)$data->id > 0);
+        $this->assertTrue(is_numeric($data->id) && (int)$data->id == 1);
 
         $sourceYaml = $this->loadDataFileAsYaml('example_job_1.yaml');
 

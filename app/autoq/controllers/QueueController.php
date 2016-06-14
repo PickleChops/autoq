@@ -10,12 +10,17 @@ class QueueController extends BaseController
 {
 
     /**
+     * @var $repo QueueRepository
+     */
+    protected $repo;
+
+    /**
      * Run on contruction by Phalcon
      */
-    public function initialize()
+    protected function initialize()
     {
-        //Indicate the repo to use for this contoller
-        parent::initialize(QueueRepository::class);
+        $this->apiHelper = $this->di->get('apiHelper');
+        $this->repo = $this->di->get(QueueRepository::class, [$this->getDI()]);
     }
 
     /**

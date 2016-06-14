@@ -34,7 +34,7 @@ class JobsRepository extends BaseRepository
      * @param $id
      * @return JobDefinition
      */
-    public function getByID($id)
+    public function getById($id)
     {
 
         try {

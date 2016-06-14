@@ -11,14 +11,19 @@ class JobController extends BaseController
 {
 
     /**
+     * @var $repo JobsRepository
+     */
+    protected $repo;
+
+    /**
      * Run on contruction by Phalcon
      */
-    public function initialize()
+    protected function initialize()
     {
-        //Indicate the repo to use for this contoller
-        parent::initialize(JobsRepository::class);
+        $this->apiHelper = $this->di->get('apiHelper');
+        $this->repo = $this->di->get(JobsRepository::class, [$this->getDI()]);
     }
-
+    
     /**
      * Expects a POST request with details of a new job submission
      * @return \Phalcon\Http\Response

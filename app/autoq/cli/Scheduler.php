@@ -2,33 +2,25 @@
 
 namespace Autoq\Cli;
 
+use Autoq\Cli\Lib\JobScheduler;
+use Autoq\Data\Jobs\JobDefinition;
 use Autoq\Data\Jobs\JobsRepository;
-use Autoq\Services\DatabaseConnections;
+use Autoq\Data\Queue\QueueRepository;
 use Phalcon\Config;
 use Phalcon\Di;
 
-class Scheduler
+class Scheduler extends CliBase
 {
-
-    /**
-     * @var $di Di
-     */
-    protected $di;
-
-    /**
-     * @var $dBConnections DatabaseConnections
-     */
-    protected $dBConnectionService;
-
-    /**
-     * @var $config Config
-     */
-    protected $config;
 
     /**
      * @var $jobRepo JobsRepository
      */
     protected $jobsRepo;
+
+    /**
+     * @var $queueRepo QueueRepository
+     */
+    protected $queueRepo;
 
     /**
      * Scheduler constructor.
@@ -37,11 +29,11 @@ class Scheduler
      */
     public function __construct(Di $di, Array $argv)
     {
-        $this->di = $di;
-        $this->config = $this->di->get('config');
-        $this->dBConnectionService = $this->di->get('dBConnectionService');
+        parent::__construct($di, $argv);
+
         $this->jobsRepo = $this->di->get(JobsRepository::class, [$di]);
-        
+        $this->queueRepo = $this->di->get(QueueRepository::class, [$di]);
+
         $this->main();
 
     }
@@ -49,24 +41,33 @@ class Scheduler
     /**
      * Off we go
      */
-    protected function main() {
-        
-        
+    public function main()
+    {
+        $jobScheduler = new JobScheduler();
+
+        //Get the currently defined jobs
+
+        /**
+         * @var $jobs JobDefinition[]
+         */
         $jobs = $this->jobsRepo->getAll();
 
-        var_dump($jobs);
-        
-        
-        
-        //Determine if job is ready to be scheduled
-        
-        
-        //If ready add to queue
-        
-    
+        // Loop through the jobs looking for jobs that are ready to schedule
+
+        foreach ($jobs as $job) {
+
+            $schedule = $job->getSchedule();
+
+            if ($jobScheduler->isJobReadyToSchedule($schedule)) {
+
+                $queueItem = [];
+
+                $this->queueRepo->save($queueItem);
+
+            }
+
+        }
+
     }
-    
-    
-    
 
 }

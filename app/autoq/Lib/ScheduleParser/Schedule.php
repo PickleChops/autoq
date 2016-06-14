@@ -204,7 +204,10 @@ class Schedule
 
         if ($this->frequency == self::NO_FREQUENCY) {
 
-            if ($this->date !== false || $this->time !== false) {
+
+            if($this->asap) {
+                $valid = true;
+            } else if ($this->date !== false || $this->time !== false) {
                 $valid = true;
             }
 

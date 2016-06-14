@@ -21,7 +21,7 @@ class ScheduleLexer implements \Iterator
     private $keywords = [
         
         self::TYPE_KEYWORD_ASAP => [
-            'now', 'asap'
+            'Now', 'Asap'
         ],
 
         self::TYPE_KEYWORD_FREQUENCY => [

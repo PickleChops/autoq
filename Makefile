@@ -23,13 +23,13 @@ push:
 	docker push skytsar/phpfpm-phalcon
 
 tests:
-	docker-compose $(COMPOSE_CONFIG_FILES) run --rm --no-deps util ./vendor/phpunit/phpunit/phpunit
+	docker-compose $(COMPOSE_CONFIG_FILES) run  --no-deps util ./vendor/phpunit/phpunit/phpunit
 
 util:
-	docker-compose $(COMPOSE_CONFIG_FILES) run --rm --no-deps util bash
+	docker-compose $(COMPOSE_CONFIG_FILES) run --no-deps util bash
 
 compose:
-	docker-compose $(COMPOSE_CONFIG_FILES) run --rm --no-deps util composer install
+	docker-compose $(COMPOSE_CONFIG_FILES) run --no-deps util composer install
 
 deploy:
 	$(MAKE) stop

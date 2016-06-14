@@ -1,0 +1,25 @@
+machine:
+  pre:
+    - curl -sSL https://s3.amazonaws.com/circle-downloads/install-circleci-docker.sh | bash -s -- 1.10.0
+    - sudo rm /usr/local/bin/docker-compose
+    - curl -L https://github.com/docker/compose/releases/download/1.6.1/docker-compose-`uname -s`-`uname -m` > docker-compose
+    - chmod +x docker-compose
+    - sudo mv docker-compose /usr/local/bin
+  environment:
+   COMPOSE_CONFIG_FILES: -f base.yml -f test.yml
+  services:
+    - docker
+
+checkout:
+  post:
+   - cp ./app/autoq/travis.env ./app/autoq/.env
+
+dependencies:
+  override:
+    - make compose
+    - make up
+    - docker ps
+
+test:
+  override:
+    - make tests

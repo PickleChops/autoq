@@ -5,6 +5,9 @@
  */
 class CLI
 {
+    /**
+     * @var $di \Phalcon\Di
+     */
     protected $di;
 
     /**
@@ -22,6 +25,7 @@ class CLI
     }
 
     /**
+     * Check the cli task we want to run and run it
      * @param $argv
      */
     private function dispatch($argv)
@@ -35,10 +39,30 @@ class CLI
 
         $argsForTask = array_slice($argv, 2);
 
-        $taskWithNS = "Autoq\\CLI\\$processToRun";
+        //Add the DI as the first param for the Cli task
+        array_unshift($argsForTask,$this->di);
+
+        $taskWithNS = "\\Autoq\\CLI\\$processToRun";
+
+        echo "FQFN: $taskWithNS\n";
+        var_dump(class_implements($taskWithNS));
 
         if (class_exists($taskWithNS)) {
-            new $taskWithNS($this->di, $argsForTask);
+
+            if(in_array('Autoq\Cli\CliTask', class_implements($taskWithNS))) {
+
+                /**
+                 * @var $task \Autoq\Cli\CliTask
+                 */
+                $task = $this->di->get($taskWithNS, $argsForTask);
+                
+                //And run the Cli task
+                $task->main();
+                
+            } else {
+                $this->exitWithMessage('A Cli task must implement the \Autoq\Cli\CliTask interface');
+            }
+
         } else {
             $this->exitWithMessage("Unable to find cli task: $processToRun");
         }

@@ -7,13 +7,19 @@ use Phalcon\Config;
 use Phalcon\Di;
 use Phalcon\Logger\Adapter\Stream;
 
-abstract class CliBase
+abstract class CliBase implements CliTask
 {
 
     /**
      * @var $di Di
      */
     protected $di;
+
+    /**
+     * @var $args []
+     */
+    protected $args;
+
 
     /**
      * @var $dBConnections DatabaseConnections
@@ -29,19 +35,28 @@ abstract class CliBase
      * @var $log Stream
      */
     protected $log;
-
-
+    
     /**
      * Scheduler constructor.
      * @param Di $di
-     * @param array $argv
+     * @param array $args
      */
-    public function __construct(Di $di, Array $argv)
+    public function __construct(Di $di, Array $args = [])
     {
         $this->di = $di;
+        $this->args = $args;
         $this->config = $this->di->get('config');
         $this->log = $this->di->get('log');
         $this->dBConnectionService = $this->di->get('dBConnectionService');
     }
+
+
+    /**
+     * Override for main code of a Cli task
+     * @return mixed
+     */
+    abstract public function main();
     
+  
+
 }

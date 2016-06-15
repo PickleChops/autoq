@@ -25,24 +25,17 @@ class Scheduler extends CliBase
     /**
      * Scheduler constructor.
      * @param Di $di
-     * @param array $argv
+     * @param array $args
      */
-    public function __construct(Di $di, Array $argv)
+    public function __construct(Di $di, Array $args = [])
     {
-        parent::__construct($di, $argv);
-        
+        parent::__construct($di, $args);
+
         $this->log->info("Scheduler started");
 
         $this->jobsRepo = $this->di->get(JobsRepository::class, [$di]);
         $this->queueRepo = $this->di->get(QueueRepository::class, [$di]);
 
-
-        //Poll database looking for new jobs to schedule
-        while(true) {
-            $this->main();
-            sleep($this->config->app->scheduler_sleep);
-        }
-        
     }
 
     /**
@@ -52,31 +45,37 @@ class Scheduler extends CliBase
     {
         $jobScheduler = new JobScheduler($this->config, $this->log);
 
-        //Get the currently defined jobs
 
-        $this->log->debug("Looking for job definitions");
-        
-        /**
-         * @var $jobs JobDefinition[]
-         */
-        $jobs = $this->jobsRepo->getAll();
-        
-        $this->log->debug(count($jobs) . " job definitions found");
+        //Poll database looking for new jobs to schedule
+        while (true) {
 
-        // Loop through the jobs looking for jobs that are ready to schedule
+            //Get the currently defined jobs
+            $this->log->debug("Looking for job definitions");
 
-        foreach ($jobs as $job) {
+            /**
+             * @var $jobs JobDefinition[]
+             */
+            $jobs = $this->jobsRepo->getAll();
 
-            $schedule = $job->getSchedule();
+            $this->log->debug(count($jobs) . " job definitions found");
 
-            if ($jobScheduler->isJobReadyToSchedule($schedule)) {
+            // Loop through the jobs looking for jobs that are ready to schedule
 
-                $queueItem = [];
+            foreach ($jobs as $job) {
 
-                $this->queueRepo->save($queueItem);
+                $schedule = $job->getSchedule();
+
+                if ($jobScheduler->isJobReadyToSchedule($schedule)) {
+
+                    $queueItem = [];
+
+      //              $this->queueRepo->save($queueItem);
+
+                }
 
             }
 
+            sleep($this->config->app->scheduler_sleep);
         }
 
     }

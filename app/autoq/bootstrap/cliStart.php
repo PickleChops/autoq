@@ -7,6 +7,9 @@ include __DIR__ . '/../vendor/autoload.php';
 //Setup error/exception handler
 \Autoq\Lib\Debug\Debug::initialize(true, STDOUT);
 
+//Useful global functions
+include __DIR__ . '/functions.php';
+
 //Load up .env environment support
 (new \Dotenv\Dotenv(__DIR__ . "/../"))->load();
 

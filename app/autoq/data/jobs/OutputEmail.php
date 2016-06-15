@@ -5,6 +5,8 @@ namespace Autoq\Data\Jobs;
  */
 class OutputEmail extends Output
 {
+    const FORMAT_HTML = 'html';
+    const FORMAT_ATTACHMENT = 'attachment';
 
     private $email;
 
@@ -12,7 +14,7 @@ class OutputEmail extends Output
     {
         $this->setType(JobDefinition::OUTPUT_EMAIL);
         $this->setEmail($data['address']);
-        $this->setFormat($data['format']);
+        $this->setFormat(array_get('format', $data, self::FORMAT_ATTACHMENT));
     }
 
     /**
@@ -35,7 +37,8 @@ class OutputEmail extends Output
      * Convert to an array
      * @return array
      */
-    public function toArray() {
+    public function toArray()
+    {
 
         return [
             'type' => $this->getType(),
@@ -43,5 +46,5 @@ class OutputEmail extends Output
             'format' => $this->getFormat()
         ];
     }
-    
+
 }

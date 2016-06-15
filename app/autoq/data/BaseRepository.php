@@ -28,8 +28,7 @@ abstract class BaseRepository implements SqlRepositoryInterface
      * @var $conection Mysql
      */
     protected $dBConnection;
-
-
+    
     /**
      * @var $conection DatabaseConnections
      */

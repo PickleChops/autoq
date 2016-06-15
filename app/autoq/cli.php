@@ -39,26 +39,20 @@ class CLI
 
         $argsForTask = array_slice($argv, 2);
 
-        //Add the DI as the first param for the Cli task
-        array_unshift($argsForTask,$this->di);
 
-        $taskWithNS = "\\Autoq\\CLI\\$processToRun";
+        if ($this->di->has($processToRun)) {
 
-        echo "FQFN: $taskWithNS\n";
-        var_dump(class_implements($taskWithNS));
+            /**
+             * Get the task from the DI container
+             * @var $task \Autoq\Cli\CliTask
+             */
+            $task = $this->di->get($processToRun);
 
-        if (class_exists($taskWithNS)) {
-
-            if(in_array('Autoq\Cli\CliTask', class_implements($taskWithNS))) {
-
-                /**
-                 * @var $task \Autoq\Cli\CliTask
-                 */
-                $task = $this->di->get($taskWithNS, $argsForTask);
+            if (in_array('Autoq\Cli\CliTask', class_implements($task))) {
                 
                 //And run the Cli task
-                $task->main();
-                
+                $task->main($argsForTask);
+
             } else {
                 $this->exitWithMessage('A Cli task must implement the \Autoq\Cli\CliTask interface');
             }
@@ -72,7 +66,8 @@ class CLI
      * @param $message
      * @param int $exitCode
      */
-    protected function exitWithMessage($message, $exitCode = 1)
+    protected
+    function exitWithMessage($message, $exitCode = 1)
     {
         echo $message . PHP_EOL;
         exit($exitCode);

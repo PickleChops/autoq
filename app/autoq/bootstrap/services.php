@@ -6,6 +6,11 @@
 $di = new \Phalcon\Di\FactoryDefault();
 
 /**
+ * Add the Di container to itself for easy di injection. Turtles all the all way down.
+ */
+$di->set('di', $di);
+
+/**
  * Add app config
  */
 $di->set(
@@ -55,6 +60,43 @@ $di->set('jobProcessor', function () {
 $di->set('apiHelper', function () {
     return new \Autoq\Services\ApiHelper();
 });
+
+
+/**
+ * JobRepo
+ */
+$di->set('jobRepo', [
+        'className' => 'Autoq\Data\Jobs\JobsRepository',
+        'arguments' => [
+            ['type' => 'service', 'name' => 'di']
+        ]
+    ]
+);
+
+/**
+ * QueueRepo
+ */
+$di->set('queueRepo', [
+        'className' => 'Autoq\Data\Queue\QueueRepository',
+        'arguments' => [
+            ['type' => 'service', 'name' => 'di']
+        ]
+    ]
+);
+
+/**
+ * Cli Scheduler
+ */
+$di->set('Scheduler', [
+    'className' => 'Autoq\Cli\Scheduler',
+    'arguments' => [
+        ['type' => 'service', 'name' => 'config'],
+        ['type' => 'service', 'name' => 'log'],
+        ['type' => 'service', 'name' => 'jobRepo'],
+        ['type' => 'service', 'name' => 'queueRepo']
+    ]
+]);
+
 
 return $di;
 

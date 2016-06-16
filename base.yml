@@ -55,11 +55,22 @@ services:
     hostname: utils
   scheduler:
     extends:
-      service: basephp
+     service: basephp
     depends_on:
     - mysql
     command: [php, cli.php, Scheduler]
-
+  runner:
+    extends:
+     service: basephp
+    depends_on:
+    - mysql
+    command: [php, cli.php, Runner]
+  sender:
+    extends:
+     service: basephp
+    depends_on:
+    - mysql
+    command: [php, cli.php, Sender]
 
 
 

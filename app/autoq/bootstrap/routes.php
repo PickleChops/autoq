@@ -74,4 +74,14 @@ $router->addGet(
     )
 );
 
+$router->addGet(
+    "/queue/:int",
+    array(
+        'namespace'  => 'Autoq\Controllers',
+        'controller' => 'Queue',
+        'action'     => 'get',
+        'id'         => 1
+    )
+);
+
 return $router;

@@ -97,6 +97,24 @@ class JobDefinition implements Arrayable
     }
 
     /**
+     * @return string
+     * @throws \Exception
+     */
+    public function convertToDbJson() {
+        $data = $this->toArray();
+
+        unset($data['id']);
+        unset($data['created']);
+        unset($data['updated']);
+
+        if(($json = json_encode($data)) === false) {
+            throw new \Exception("Unable to convert job definiton {$this->id} to JSON");
+        }
+
+        return $json;
+    }
+
+    /**
      * @return mixed
      */
     public function getCreated()

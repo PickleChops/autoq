@@ -12,5 +12,6 @@ interface SqlRepositoryInterface
     public function update($id, $data);
     public function delete($id);
     public function getWhere($whereString = null);
+    public function getDBConnection();
 
 }

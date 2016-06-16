@@ -2,13 +2,13 @@
 
 namespace Autoq\Cli;
 
-use Autoq\Cli\Lib\JobScheduler;
 use Autoq\Data\Jobs\JobDefinition;
 use Autoq\Data\Jobs\JobsRepository;
 use Autoq\Data\Queue\QueueControl;
 use Autoq\Lib\ScheduleParser\Schedule;
 use Phalcon\Config;
 use Phalcon\Di;
+use Phalcon\Logger;
 use Phalcon\Logger\Adapter\Stream;
 
 class Scheduler implements CliTask
@@ -17,7 +17,7 @@ class Scheduler implements CliTask
     protected $config;
     protected $log;
     protected $jobsRepo;
-    protected $queueRepo;
+    protected $queueControl;
 
     protected $args;
 
@@ -28,14 +28,14 @@ class Scheduler implements CliTask
      * @param Config $config
      * @param Stream $log
      * @param JobsRepository $jobRepo
-     * @param QueueControl $queueRepo
+     * @param QueueControl $queueControl
      */
-    public function __construct(Config $config, Stream $log, JobsRepository $jobRepo, QueueControl $queueRepo)
+    public function __construct(Config $config, Stream $log, JobsRepository $jobRepo, QueueControl $queueControl)
     {
         $this->config = $config;
         $this->log = $log;
         $this->jobsRepo = $jobRepo;
-        $this->queueRepo = $queueRepo;
+        $this->queueControl = $queueControl;
     }
 
     /**
@@ -63,15 +63,18 @@ class Scheduler implements CliTask
 
             foreach ($jobs as $job) {
 
-                //Todo - Get last successful run time of this job and factor into whether to run or not
+                if (($last = $this->queueControl->getLastCompletedOrActiveWithInWindow($job)) === false) {
 
+                    if ($this->isJobReadyToSchedule($job)) {
 
-                if ($this->isJobReadyToSchedule($job)) {
-                
-                    $this->queueControl->addNew($job);
-                    
+                        $queueID = $this->queueControl->addNew($job);
+
+                        $this->logForJob($job, "Added to queue with queue ID: $queueID");
+
+                    }
+                } else {
+                    $this->logForJob($job, "This job is already scheduled in the queue (queue ID: {$last['id']})",Logger::DEBUG);
                 }
-
             }
 
             sleep($this->config->app->scheduler_sleep);
@@ -89,18 +92,18 @@ class Scheduler implements CliTask
         $ready = false;
         $now = time();
         $schedule = $job->getSchedule();
-        
-          switch ($schedule->getFrequency()) {
+
+        switch ($schedule->getFrequency()) {
 
             case Schedule::ASAP:
-                 $ready = true;
+                $ready = true;
                 break;
 
             case Schedule::FIXED_TIME:
 
                 $ready = $this->isReadyFixedTime($schedule, $now);
                 break;
-            
+
             case Schedule::HOURLY:
                 break;
 
@@ -112,7 +115,7 @@ class Scheduler implements CliTask
 
         }
 
-        $this->log->info("Job ID: {$job->getId()} - \"{$job->getName()}\" - " . ($ready ? "ready to be scheduled" : "not ready"));
+        $this->logForJob($job, "\"{$job->getName()}\" - " . ($ready ? "will be added to queue..." : "not ready for scheduling"));
 
         return $ready;
 
@@ -126,7 +129,7 @@ class Scheduler implements CliTask
      */
     private function isReadyFixedTime(Schedule $schedule, $now)
     {
-        
+
         if ($schedule->getDate() && $schedule->getTime()) {
             $this->log->error("No date or time provided for a 'No Frequency' schedule ");
             return false;
@@ -156,6 +159,18 @@ class Scheduler implements CliTask
     public function setTimeHorizon($timeHorizon)
     {
         $this->timeHorizon = $timeHorizon;
+    }
+
+    /**
+     * @param JobDefinition $job
+     * @param $message
+     * @param int $type
+     */
+    private function logForJob(JobDefinition $job, $message, $type = Logger::INFO)
+    {
+
+        $message = "Job ID: {$job->getId()} - " . $message;
+        $this->log->log($type, $message);
     }
 
 }

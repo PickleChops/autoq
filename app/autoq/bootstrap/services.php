@@ -70,7 +70,7 @@ $di->set('apiHelper', function () {
  * JobRepo
  */
 $di->set('jobRepo', [
-        'className' => 'Autoq\Data\Jobs\JobsRepository',
+        'className' => \Autoq\Data\Jobs\JobsRepository::class,
         'arguments' => [
             ['type' => 'service', 'name' => 'di']
         ]
@@ -81,9 +81,24 @@ $di->set('jobRepo', [
  * QueueRepo
  */
 $di->set('queueRepo', [
-        'className' => 'Autoq\Data\Queue\QueueRepository',
+        'className' => \Autoq\Data\Queue\QueueRepository::class,
         'arguments' => [
             ['type' => 'service', 'name' => 'di']
+        ]
+    ]
+);
+
+
+
+/**
+ * QueueControl
+ */
+$di->set('queueControl', [
+        'className' => \Autoq\Data\Queue\QueueControl::class,
+        'arguments' => [
+            ['type' => 'service', 'name' => 'config'],
+            ['type' => 'service', 'name' => 'log'],
+            ['type' => 'service', 'name' => 'queueRepo'],
         ]
     ]
 );
@@ -92,12 +107,38 @@ $di->set('queueRepo', [
  * Cli Scheduler
  */
 $di->set('Scheduler', [
-    'className' => 'Autoq\Cli\Scheduler',
+    'className' => \Autoq\Cli\Scheduler::class,
     'arguments' => [
         ['type' => 'service', 'name' => 'config'],
         ['type' => 'service', 'name' => 'log'],
         ['type' => 'service', 'name' => 'jobRepo'],
-        ['type' => 'service', 'name' => 'queueRepo']
+        ['type' => 'service', 'name' => 'queueControl']
+    ]
+]);
+
+/**
+ * Cli Runner
+ */
+$di->set('Runner', [
+    'className' => \Autoq\Cli\Runner::class,
+    'arguments' => [
+        ['type' => 'service', 'name' => 'config'],
+        ['type' => 'service', 'name' => 'log'],
+        ['type' => 'service', 'name' => 'jobRepo'],
+        ['type' => 'service', 'name' => 'queueControl']
+    ]
+]);
+
+/**
+ * Cli Sender
+ */
+$di->set('Sender', [
+    'className' => \Autoq\Cli\Sender::class,
+    'arguments' => [
+        ['type' => 'service', 'name' => 'config'],
+        ['type' => 'service', 'name' => 'log'],
+        ['type' => 'service', 'name' => 'jobRepo'],
+        ['type' => 'service', 'name' => 'queueControl']
     ]
 ]);
 

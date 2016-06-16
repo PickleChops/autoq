@@ -3,10 +3,9 @@
 namespace Autoq\Data\Queue;
 
 use Autoq\Data\DataTraits;
-use Autoq\Services\DbConnectionMgr;
+use Autoq\Data\Jobs\JobDefinition;
 use Phalcon\Config;
 use Phalcon\Db;
-use Phalcon\Db\Exception;
 use Phalcon\Logger\Adapter\Stream;
 
 
@@ -16,70 +15,77 @@ class QueueControl
 
     protected $config;
     protected $log;
-    private $dbConnectionService;
-
-    protected $args;
-
-    protected $timeHorizon;
+    protected $queueRepo;
+    protected $dbConnection;
     
     /**
      * JobControl constructor.
      * @param Config $config
      * @param Stream $log
-     * @param DbConnectionMgr $dbConnectionService
+     * @param QueueRepository $queueRepo
      */
-    public function __construct(Config $config, Stream $log, DbConnectionMgr $dbConnectionService)
+    public function __construct(Config $config, Stream $log, QueueRepository $queueRepo)
     {
         $this->config = $config;
         $this->log = $log;
-        $this->dbConnectionService = $dbConnectionService;
+        $this->queueRepo = $queueRepo;
+
+        $this->dbConnection = $queueRepo->getDBConnection();
     }
-    
-    protected function getDBConnection() {
-        return true;
-    }
-    
+
     /**
-     * @param $data
+     * Add new item to Queue
+     * @param JobDefinition $jobDefinition
      * @return bool
      */
-    private function save($data)
+    public function addNew(JobDefinition $jobDefinition)
     {
+        $data = [];
 
-        $defAsJson = $this->convertToJson($data['def'], 'Job definition');
-        $status = $this->convertToJson($data['status'], 'Status');
+        //Convert jobDefinition
+        $jobDefinitionData = $jobDefinition->toArray();
+        unset($jobDefinitionData['created']);
+        unset($jobDefinitionData['updated']);
 
-        if ($defAsJson == null || $status == null) {
-            return false;
-        }
+        $data['job_def'] = $jobDefinitionData;
+        $data['flow_control'] = (new QueueFlow())->startStatus(QueueFlow::STATUS_NEW)->getFlowControl();
 
-        if ($this->dBConnection->insertAsDict('job_queue', ['def' => $defAsJson, 'status' => $status]) === false) {
-            $this->log->error("Unable to save item to queue");
-            return false;
-        }
+        return $this->queueRepo->save($data);
+    }
 
-        return $this->dBConnection->lastInsertId();
+    public function getNextNewToProcess() {
+
+        
 
     }
 
+
     /**
-     * Fetch a job definition by id
+     * @param JobDefinition $jobDefinition
+     * @return array
+     */
+    public function getLastCompletedOrActiveWithInWindow(JobDefinition $jobDefinition)
+    {
+        $jobId = $jobDefinition->getId();
+        
+        $last = $this->dbConnection->fetchOne("
+                select * 
+                from job_queue 
+                where job_def->'$.id' = {$jobId} 
+                    AND NOT (flow_control->'$.ERROR' OR flow_control->'$.ABORTED' OR flow_control->'$.COMPLETED') 
+                order by id DESC limit 1");
+        
+        return $last;
+    }
+
+    /**
+     * Fetch a queue item by id
      * @param $id
      * @return array
      */
     public function getById($id)
     {
-        try {
-
-            $row = $this->dBConnection->fetchOne("SELECT * FROM job_queue where id = :id", Db::FETCH_ASSOC, ['id' => $id]);
-
-        } catch (Exception $e) {
-            $this->log->error("Unable to fetch job with id: $id");
-            return false;
-        }
-
-        return $row === false ? [] : $this->hydrate($row);
-
+        return $this->queueRepo->getById($id);
     }
 
     /**
@@ -88,18 +94,7 @@ class QueueControl
      */
     public function getAll($limit = null)
     {
-
-        try {
-
-            $results = $this->simpleSelect('job_queue', null, null, $limit, [$this, 'hydrate']);
-
-        } catch (Exception $e) {
-            $this->log->error("Unable to fetch queue items.");
-            return false;
-        }
-
-        return $results;
-
+        return $this->queueRepo->getAll($limit);
     }
 
     /**
@@ -108,67 +103,17 @@ class QueueControl
      */
     public function getWhere($whereString = null)
     {
-
-        try {
-
-            $results = $this->simpleSelect('job_queue', $whereString, null, null, [$this, 'hydrate']);
-
-
-        } catch (Exception $e) {
-            $this->log->error("Unable to fetch queue items with condition: $whereString");
-            return false;
-        }
-
-        return $results;
-
+        return $this->queueRepo->getWhere($whereString);
     }
 
     /**
-     * Delete a job
-     * @param $id
-     * @return bool
-     */
-    public function delete($id)
-    {
-
-        try {
-
-            $this->dBConnection->execute("DELETE FROM job_queue where id = :id", ['id' => $id]);
-
-        } catch (Exception $e) {
-            $this->log->error("Unable to delete job_queue with id: $id");
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * update a job
      * @param $id
      * @param $data
      * @return bool
      */
     public function update($id, $data)
     {
-
-        $defAsJson = $this->convertToJson($data['def'], 'Job definition');
-        $status = $this->convertToJson($data['status'], 'Status');
-
-        if ($defAsJson == null || $status == null) {
-            return false;
-        }
-
-        try {
-
-            $this->dBConnection->updateAsDict('job_queue', ['def' => $defAsJson, 'status' => $status], "id = $id");
-
-        } catch (Exception $e) {
-            $this->log->error("Unable to update queue item with id: $id");
-            return false;
-        }
-
-        return true;
+        return $this->queueRepo->update($id, $data);
     }
 
     /**
@@ -178,78 +123,8 @@ class QueueControl
      */
     public function exists($id)
     {
-
-        try {
-
-            $row = $this->dBConnection->fetchOne("SELECT id FROM job_queue where id = :id", Db::FETCH_ASSOC, ['id' => $id]);
-
-        } catch (Exception $e) {
-            $this->log->error("Unable to fetch queue item with id: $id");
-            return false;
-        }
-
-        return array_key_exists('id', $row);
-
+        return $this->queueRepo->exists($id);
     }
 
-
-    /**
-     * Build JSON representation of queue item
-     * @param $row
-     * @return bool|mixed
-     */
-    protected function hydrate($row)
-    {
-        $definition = $this->convertFromJson($row['def']);
-        $status = $this->convertFromJson($row['status']);
-
-        if ($definition == null || $status == null) {
-            return false;
-        }
-
-        return [
-
-            'id' => $row['id'],
-            'definition' => $definition,
-            'status' => $status,
-            'created' => $row['created'],
-            'updated' => $row['updated']
-
-        ];
-    }
-
-
-    /**
-     * @param $data
-     * @param null $fieldName
-     * @return bool
-     */
-    protected function convertToJson($data, $fieldName = null)
-    {
-        if (($json = json_encode($data)) === false) {
-            $this->log->error("Unable to convert $fieldName data to JSON");
-            return false;
-        }
-
-        return $json;
-    }
-
-    /**
-     * @param $data
-     * @param null $fieldName
-     * @return bool|mixed
-     */
-    protected function convertFromJson($data, $fieldName = null)
-    {
-
-        $data = json_decode($data, true);
-
-        if (json_last_error() != JSON_ERROR_NONE) {
-            $this->log->error("Unable to convert $fieldName from JSON");
-            return false;
-        }
-
-        return $data;
-    }
 
 }

@@ -6,9 +6,10 @@ $settings = [
     "app" => [
         'api_host' => getenv('APP_API_HOST'),
         'scheduler_horizon' => getenv('APP_SCHEDULER_HORIZON'),
-        'scheduler_sleep' => getenv('APP_SCHEDULER_SLEEP')
+        'scheduler_sleep' => getenv('APP_SCHEDULER_SLEEP'),
+        'runner_sleep' => getenv('APP_RUNNER_SLEEP'),
+        'sender_sleep' => getenv('APP_SENDER_SLEEP')
     ],
-    
     
     "mysql" => [
         "adapter" => \Phalcon\Db\Adapter\Pdo\Mysql::class,

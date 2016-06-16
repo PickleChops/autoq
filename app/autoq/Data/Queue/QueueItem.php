@@ -6,16 +6,7 @@ namespace Autoq\Data\Queue;
 
 class QueueItem
 {
-
-    const STATUS_NEW = 1;
-    const STATUS_FETCHING = 2;
-    const STATUS_FETCH_COMPLETE = 3;
-    const STATUS_SENDING = 4;
-    const STATUS_COMPLETED = 5;
-    const STATUS_ERROR = 1000;
-    const STATUS_ABORTED = 2000;
-
-
+    
     private $status;
     private $statusReceived;
 

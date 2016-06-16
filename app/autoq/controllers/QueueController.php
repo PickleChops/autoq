@@ -8,11 +8,10 @@ use Autoq\Data\Queue\QueueControl;
  */
 class QueueController extends BaseController
 {
-
     /**
-     * @var $repo QueueControl
+     * @var $queueControl QueueControl
      */
-    protected $repo;
+    protected $queueControl;
 
     /**
      * Run on contruction by Phalcon
@@ -20,23 +19,23 @@ class QueueController extends BaseController
     protected function initialize()
     {
         $this->apiHelper = $this->di->get('apiHelper');
-        $this->repo = $this->di->get(QueueControl::class, [$this->getDI()]);
+        $this->queueControl = $this->di->get('queueControl');
     }
 
     /**
-     * Fetch an existing job
-     * @param $jobID
+     * Fetch item from queue
+     * @param $queueItemID
      * @return \Phalcon\Http\Response
      */
-    public function getAction($jobID)
+    public function getAction($queueItemID)
     {
-        if (($job = $this->repo->getById($jobID)) === false) {
-            $response = $this->apiHelper->responseError("Unable to read job");
-        } elseif($job === []) {
-            $response = $this->apiHelper->responseError("Job with ID: $jobID does not exist");
+        if (($queueItem = $this->queueControl->getById($queueItemID)) === false) {
+            $response = $this->apiHelper->responseError("Unable to read queue Item: $queueItemID");
+        } elseif($queueItem === []) {
+            $response = $this->apiHelper->responseError("Queue item with ID: $queueItemID does not exist");
 
         } else {
-            $response = $this->apiHelper->responseSuccessWithData($job);
+            $response = $this->apiHelper->responseSuccessWithData($queueItem);
         }
         return $response;
     }
@@ -50,7 +49,7 @@ class QueueController extends BaseController
     
         $limit = $this->request->getQuery('limit','int', null);
         
-        if (($queueItems = $this->repo->getAll($limit)) === false) {
+        if (($queueItems = $this->queueControl->getAll($limit)) === false) {
             $response = $this->apiHelper->responseError("Unable to read queue items");
         } else {
             $response = $this->apiHelper->responseSuccessWithData($queueItems);

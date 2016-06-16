@@ -15,15 +15,15 @@ class QueueRepository extends BaseRepository
     public function save($data)
     {
 
-        $defAsJson = $this->convertToJson($data['def'], 'Job definition');
-        $status = $this->convertToJson($data['status'], 'Status');
+        $defAsJson = $this->convertToJson($data['job_def'], 'Job definition');
+        $flowControl = $this->convertToJson($data['flow_control'], 'Flow control');
 
-        if ($defAsJson == null || $status == null) {
+        if ($defAsJson == null || $flowControl == null) {
             return false;
         }
 
-        if ($this->dBConnection->insertAsDict('job_queue', ['def' => $defAsJson, 'status' => $status]) === false) {
-            $this->logger->error("Unable to save item to queue");
+        if ($this->dBConnection->insertAsDict('job_queue', ['job_def' => $defAsJson, 'flow_control' => $flowControl]) === false) {
+            $this->log->error("Unable to save item to queue");
             return false;
         }
 
@@ -34,15 +34,16 @@ class QueueRepository extends BaseRepository
     /**
      * Fetch a job definition by id
      * @param $id
-     * @return array
+     * @return QueueItem
      */
     public function getById($id)
     {
         try {
+
             $row = $this->dBConnection->fetchOne("SELECT * FROM job_queue where id = :id", Db::FETCH_ASSOC, ['id' => $id]);
 
         } catch (Exception $e) {
-            $this->logger->error("Unable to fetch job with id: $id");
+            $this->log->error("Unable to fetch queue item with id: $id");
             return false;
         }
 
@@ -59,10 +60,10 @@ class QueueRepository extends BaseRepository
 
         try {
 
-            $results = $this->simpleSelect('job_queue', null, null, $limit, [$this, 'hydrate']);
+            $results = $this->simpleSelect($this->dBConnection,'job_queue', null, null, $limit, [$this, 'hydrate']);
 
         } catch (Exception $e) {
-            $this->logger->error("Unable to fetch queue items.");
+            $this->log->error("Unable to fetch queue items.");
             return false;
         }
 
@@ -76,23 +77,21 @@ class QueueRepository extends BaseRepository
      */
     public function getWhere($whereString = null)
     {
-
         try {
 
-            $results = $this->simpleSelect('job_queue', $whereString, null, null, [$this, 'hydrate']);
-
+            $jobs = $this->simpleSelect($this->dBConnection, 'job_queue', $whereString, null, null, [$this, 'hydrate']);
 
         } catch (Exception $e) {
-            $this->logger->error("Unable to fetch queue items with condition: $whereString");
+            $this->log->error("Unable to fetch queue items with condition: $whereString");
             return false;
         }
 
-        return $results;
+        return $jobs;
 
     }
 
     /**
-     * Delete a job
+     * Delete a queue item
      * @param $id
      * @return bool
      */
@@ -104,7 +103,7 @@ class QueueRepository extends BaseRepository
             $this->dBConnection->execute("DELETE FROM job_queue where id = :id", ['id' => $id]);
 
         } catch (Exception $e) {
-            $this->logger->error("Unable to delete job_queue with id: $id");
+            $this->log->error("Unable to delete queue with id: $id");
             return false;
         }
 
@@ -120,19 +119,18 @@ class QueueRepository extends BaseRepository
     public function update($id, $data)
     {
 
-        $defAsJson = $this->convertToJson($data['def'], 'Job definition');
-        $status = $this->convertToJson($data['status'], 'Status');
 
-        if ($defAsJson == null || $status == null) {
+        if (($defAsJson = json_encode($data)) === false) {
+            $this->log->error("Unable to convert job defintion to json");
             return false;
         }
 
         try {
 
-            $this->dBConnection->updateAsDict('job_queue', ['def' => $defAsJson, 'status' => $status], "id = $id");
+            $this->dBConnection->updateAsDict('job_defs', ['def' => $defAsJson], "id = $id");
 
         } catch (Exception $e) {
-            $this->logger->error("Unable to update queue item with id: $id");
+            $this->log->error("Unable to update job with id: $id");
             return false;
         }
 
@@ -140,7 +138,7 @@ class QueueRepository extends BaseRepository
     }
 
     /**
-     * Does a record exist for this jobID
+     * Does a record exist for this queue item ID
      * @param $id
      * @return array
      */
@@ -152,38 +150,44 @@ class QueueRepository extends BaseRepository
             $row = $this->dBConnection->fetchOne("SELECT id FROM job_queue where id = :id", Db::FETCH_ASSOC, ['id' => $id]);
 
         } catch (Exception $e) {
-            $this->logger->error("Unable to fetch queue item with id: $id");
+            $this->log->error("Unable to read queue with id: $id");
             return false;
         }
 
-        return array_key_exists('id', $row);
+        return $row ? array_key_exists('id', $row) : false;
 
     }
 
 
     /**
-     * Build JSON representation of queue item
+     * Decode JSON representation of job defintion
      * @param $row
      * @return bool|mixed
      */
     protected function hydrate($row)
     {
-        $definition = $this->convertFromJson($row['def']);
-        $status = $this->convertFromJson($row['status']);
 
-        if ($definition == null || $status == null) {
+        $jobDefinitionData = $this->convertFromJson($row['job_def'], 'job_def');
+        $flowControl = $this->convertFromJson($row['flow_control'], 'flow_control');
+        
+
+        if ($jobDefinitionData === false || $flowControl === false) {
+            $this->log->error("Unable to interpret queue item");
             return false;
+        } else {
+
+            $definitionData['id'] = $row['id'];
+            $definitionData['created'] = $row['created'];
+            $definitionData['updated'] = $row['updated'];
+
+
+            $jobDefinition = new JobDefinition($definitionData);
+
         }
 
-        return [
+        return $jobDefinition;
 
-            'id' => $row['id'],
-            'definition' => $definition,
-            'status' => $status,
-            'created' => $row['created'],
-            'updated' => $row['updated']
-
-        ];
     }
+
 
 }

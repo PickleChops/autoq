@@ -16,12 +16,12 @@ class JobsRepository extends BaseRepository
     {
 
         if (($defAsJson = json_encode($data)) === false) {
-            $this->logger->error("Unable to convert job defintion to json");
+            $this->log->error("Unable to convert job defintion to json");
             return false;
         }
 
         if ($this->dBConnection->insertAsDict('job_defs', ['def' => $defAsJson]) === false) {
-            $this->logger->error("Unable to save job definiton");
+            $this->log->error("Unable to save job definiton");
             return false;
         }
 
@@ -42,7 +42,7 @@ class JobsRepository extends BaseRepository
             $row = $this->dBConnection->fetchOne("SELECT * FROM job_defs where id = :id", Db::FETCH_ASSOC, ['id' => $id]);
 
         } catch (Exception $e) {
-            $this->logger->error("Unable to fetch job with id: $id");
+            $this->log->error("Unable to fetch job with id: $id");
             return false;
         }
 
@@ -61,7 +61,7 @@ class JobsRepository extends BaseRepository
             $results = $this->simpleSelect($this->dBConnection, 'job_defs', null, null, $limit, [$this, 'hydrate']);
 
         } catch (Exception $e) {
-            $this->logger->error("Unable to fetch jobs.");
+            $this->log->error("Unable to fetch jobs.");
             return false;
         }
 
@@ -80,7 +80,7 @@ class JobsRepository extends BaseRepository
             $jobs = $this->simpleSelect($this->dBConnection, 'job_defs', $whereString, null, null, [$this, 'hydrate']);
 
         } catch (Exception $e) {
-            $this->logger->error("Unable to fetch jobs with condition: $whereString");
+            $this->log->error("Unable to fetch jobs with condition: $whereString");
             return false;
         }
 
@@ -101,7 +101,7 @@ class JobsRepository extends BaseRepository
             $this->dBConnection->execute("DELETE FROM job_defs where id = :id", ['id' => $id]);
 
         } catch (Exception $e) {
-            $this->logger->error("Unable to delete job with id: $id");
+            $this->log->error("Unable to delete job with id: $id");
             return false;
         }
 
@@ -117,9 +117,8 @@ class JobsRepository extends BaseRepository
     public function update($id, $data)
     {
 
-
         if (($defAsJson = json_encode($data)) === false) {
-            $this->logger->error("Unable to convert job defintion to json");
+            $this->log->error("Unable to convert job defintion to json");
             return false;
         }
 
@@ -128,7 +127,7 @@ class JobsRepository extends BaseRepository
             $this->dBConnection->updateAsDict('job_defs', ['def' => $defAsJson], "id = $id");
 
         } catch (Exception $e) {
-            $this->logger->error("Unable to update job with id: $id");
+            $this->log->error("Unable to update job with id: $id");
             return false;
         }
 
@@ -148,7 +147,7 @@ class JobsRepository extends BaseRepository
             $row = $this->dBConnection->fetchOne("SELECT id FROM job_defs where id = :id", Db::FETCH_ASSOC, ['id' => $id]);
 
         } catch (Exception $e) {
-            $this->logger->error("Unable to read job with id: $id");
+            $this->log->error("Unable to read job with id: $id");
             return false;
         }
 
@@ -169,11 +168,11 @@ class JobsRepository extends BaseRepository
 
 
         if (json_last_error() != JSON_ERROR_NONE) {
-            $this->logger->error("Unable to interpret job definition");
+            $this->log->error("Unable to interpret job definition");
             return false;
         } else {
 
-            $definitionData['id'] = $row['id'];
+            $definitionData['id'] = (int)$row['id'];
             $definitionData['created'] = $row['created'];
             $definitionData['updated'] = $row['updated'];
 
@@ -185,6 +184,5 @@ class JobsRepository extends BaseRepository
         return $jobDefinition;
 
     }
-
-
+    
 }

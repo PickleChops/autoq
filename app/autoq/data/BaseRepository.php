@@ -20,9 +20,9 @@ abstract class BaseRepository implements SqlRepositoryInterface
     protected $di;
 
     /**
-     * @var $logger Stream
+     * @var $log Stream
      */
-    protected $logger;
+    protected $log;
 
     /**
      * @var $config Config
@@ -47,7 +47,7 @@ abstract class BaseRepository implements SqlRepositoryInterface
     {
         $this->di = $di;
         $this->config = $this->di->get('config');
-        $this->logger = $this->di->get('log');
+        $this->log = $this->di->get('log');
         $this->dBConnectionMgr = $this->di->get('dBConnectionMgr');
         $this->dBConnection = $this->dBConnectionMgr->getConnection('mysql');
 
@@ -96,5 +96,48 @@ abstract class BaseRepository implements SqlRepositoryInterface
      * @return mixed
      */
     abstract public function getWhere($whereString = null);
+
+    /**
+     * @param $data
+     * @param null $fieldName
+     * @return bool
+     */
+    protected function convertToJson($data, $fieldName = null)
+    {
+        if (($json = json_encode($data)) === false) {
+            $this->log->error("Unable to convert $fieldName data to JSON");
+            return false;
+        }
+
+        return $json;
+    }
+
+    /**
+     * @param $data
+     * @param null $fieldName
+     * @return bool|mixed
+     */
+    protected function convertFromJson($data, $fieldName = null)
+    {
+
+        $data = json_decode($data, true);
+
+        if (json_last_error() != JSON_ERROR_NONE) {
+            $this->log->error("Unable to convert $fieldName from JSON");
+            return false;
+        }
+
+        return $data;
+    }
+
+    /**
+     * @return Mysql
+     */
+    public function getDBConnection()
+    {
+        return $this->dBConnection;
+    }
+    
+    
 
 }

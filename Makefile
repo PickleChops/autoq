@@ -37,7 +37,7 @@ deploy:
 	$(MAKE) push
 	./deploy.sh
 
-scheduler_logs:
+scheduler-logs:
 	-$(call show_logs,scheduler)
 
 logs:
@@ -48,5 +48,5 @@ define show_logs
 	docker-compose $(COMPOSE_CONFIG_FILES) logs $1
 endef
 
-.PHONY: up stop build push deploy cli tests compose
+.PHONY: up stop build push deploy cli tests compose logs scheduler-logs
 

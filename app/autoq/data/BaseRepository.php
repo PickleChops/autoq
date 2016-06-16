@@ -2,7 +2,7 @@
 
 namespace Autoq\Data;
 
-use Autoq\Services\DatabaseConnections;
+use Autoq\Services\DbConnectionMgr;
 use Phalcon\Config;
 use Phalcon\Db\Adapter\Pdo\Mysql;
 use Phalcon\Di;
@@ -12,6 +12,11 @@ use Phalcon\Logger\Adapter\Stream;
 abstract class BaseRepository implements SqlRepositoryInterface
 {
 
+    use DataTraits;
+
+    /**
+     * @var $di Di
+     */
     protected $di;
 
     /**
@@ -30,9 +35,9 @@ abstract class BaseRepository implements SqlRepositoryInterface
     protected $dBConnection;
     
     /**
-     * @var $conection DatabaseConnections
+     * @var $conection DbConnectionMgr
      */
-    protected $dBConnectionService;
+    protected $dBConnectionMgr;
 
     /**
      * BaseRepository constructor. Set up basic services for a repository
@@ -43,8 +48,8 @@ abstract class BaseRepository implements SqlRepositoryInterface
         $this->di = $di;
         $this->config = $this->di->get('config');
         $this->logger = $this->di->get('log');
-        $this->dBConnectionService = $this->di->get('dBConnectionService');
-        $this->dBConnection = $this->dBConnectionService->getConnection($this->config['database']);
+        $this->dBConnectionMgr = $this->di->get('dBConnectionMgr');
+        $this->dBConnection = $this->dBConnectionMgr->getConnection('mysql');
 
     }
 
@@ -92,68 +97,4 @@ abstract class BaseRepository implements SqlRepositoryInterface
      */
     abstract public function getWhere($whereString = null);
 
-
-    /**
-     * @param $data
-     * @param null $fieldName
-     * @return bool
-     */
-    protected function convertToJson($data, $fieldName = null)
-    {
-        if (($json = json_encode($data)) === false) {
-            $this->logger->error("Unable to convert $fieldName data to JSON");
-            return false;
-        }
-
-        return $json;
-    }
-
-    /**
-     * @param $data
-     * @param null $fieldName
-     * @return bool|mixed
-     */
-    protected function convertFromJson($data, $fieldName = null)
-    {
-
-        $data = json_decode($data, true);
-
-        if (json_last_error() != JSON_ERROR_NONE) {
-            $this->logger->error("Unable to convert $fieldName from JSON");
-            return false;
-        }
-
-        return $data;
-    }
-
-
-    /**
-     * @param $table
-     * @param $whereString
-     * @param $orderString
-     * @param $limitString
-     * @param callable $hydrater
-     * @return array|bool
-     */
-    protected function simpleSelect($table, $whereString, $orderString, $limitString, Callable $hydrater = null)
-    {
-
-        $whereString = $whereString == '' ? null : 'WHERE ' . $whereString;
-        $orderString = $orderString == '' ? null : 'ORDER BY ' . $orderString;
-        $limitString = $limitString == '' ? null : 'LIMIT ' . $limitString;
-
-        $result = $this->dBConnection->fetchAll("SELECT * FROM `$table` $whereString $orderString $limitString", Db::FETCH_ASSOC);
-
-
-        $rows = [];
-
-        if ($hydrater !== null) {
-            foreach ($result as $row) {
-                $rows[] = call_user_func($hydrater, $row);
-            }
-        }
-
-        return $rows;
-
-    }
 }

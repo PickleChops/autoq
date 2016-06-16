@@ -58,7 +58,7 @@ class JobsRepository extends BaseRepository
     {
         try {
 
-            $results = $this->simpleSelect('job_defs', null, null, $limit, [$this, 'hydrate']);
+            $results = $this->simpleSelect($this->dBConnection, 'job_defs', null, null, $limit, [$this, 'hydrate']);
 
         } catch (Exception $e) {
             $this->logger->error("Unable to fetch jobs.");
@@ -77,7 +77,7 @@ class JobsRepository extends BaseRepository
 
         try {
 
-            $jobs = $this->simpleSelect('job_defs', $whereString, null, null, [$this, 'hydrate']);
+            $jobs = $this->simpleSelect($this->dBConnection, 'job_defs', $whereString, null, null, [$this, 'hydrate']);
 
         } catch (Exception $e) {
             $this->logger->error("Unable to fetch jobs with condition: $whereString");

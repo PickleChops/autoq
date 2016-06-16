@@ -21,18 +21,20 @@ class JobsApiTest extends Autoq_TestCase
 
     /**
      * @beforeClass
-     * Truncate underlying job table
+     * Save state in db and clear
      */
-    public static function clearJobDefTable()
+    public static function saveDB()
     {
-        $dBConnectionService = self::$di->get('dBConnectionService');
+        self::backupAndClearTableForTesting('job_defs');
+    }
 
-        /**
-         * @var $connection Pdo\Mysql
-         */
-        $connection = $dBConnectionService->getConnection(self::$config['database']);
-        $connection->execute("truncate table job_defs");
-        $connection = null;
+    /**
+     * @afterClass
+     * restore db state
+     */
+    public static function restoreDB()
+    {
+        self::restoreTable('job_defs');
     }
 
     /**
@@ -125,7 +127,6 @@ class JobsApiTest extends Autoq_TestCase
 
     }
 
-
     /**
      * @depends testGetJob
      * @param $id
@@ -164,6 +165,33 @@ class JobsApiTest extends Autoq_TestCase
         $this->assertEquals('success', $response->status);
 
         $this->assertObjectNotHasAttribute('data', $response);
+
+    }
+
+
+    /**
+     * Test fetching all jobs
+     */
+    public function testGetJobs()
+    {
+        self::truncateTable('job_defs');
+
+        $resource = $this->getDataFileResource('example_job_1.yaml');
+        $this->client->request('POST', '/jobs/', ['body' => $resource]);
+
+        $resource = $this->getDataFileResource('example_job_2.yaml');
+        $this->client->request('POST', '/jobs/', ['body' => $resource]);
+
+        $rawResponse = $this->client->get("/jobs/");
+        $response = json_decode($rawResponse->getBody());
+
+        $this->assertEquals('success', $response->status);
+
+        $data = $response->data;
+
+        $this->assertTrue(count($data) == 2);
+        $this->assertTrue($data[0]->id == 1);
+        $this->assertTrue($data[1]->id == 2);
 
     }
 

@@ -5,7 +5,7 @@ namespace Autoq\Cli;
 use Autoq\Cli\Lib\JobScheduler;
 use Autoq\Data\Jobs\JobDefinition;
 use Autoq\Data\Jobs\JobsRepository;
-use Autoq\Data\Queue\QueueRepository;
+use Autoq\Data\Queue\QueueControl;
 use Autoq\Lib\ScheduleParser\Schedule;
 use Phalcon\Config;
 use Phalcon\Di;
@@ -28,9 +28,9 @@ class Scheduler implements CliTask
      * @param Config $config
      * @param Stream $log
      * @param JobsRepository $jobRepo
-     * @param QueueRepository $queueRepo
+     * @param QueueControl $queueRepo
      */
-    public function __construct(Config $config, Stream $log, JobsRepository $jobRepo, QueueRepository $queueRepo)
+    public function __construct(Config $config, Stream $log, JobsRepository $jobRepo, QueueControl $queueRepo)
     {
         $this->config = $config;
         $this->log = $log;
@@ -45,8 +45,6 @@ class Scheduler implements CliTask
     public function main(Array $args = [])
     {
         $this->log->info("Scheduler started");
-
-        $jobScheduler = new JobScheduler($this->config, $this->log);
 
         //Poll database looking for new jobs to schedule
         while (true) {
@@ -65,9 +63,13 @@ class Scheduler implements CliTask
 
             foreach ($jobs as $job) {
 
-                if ($jobScheduler->isJobReadyToSchedule($job)) {
+                //Todo - Get last successful run time of this job and factor into whether to run or not
 
 
+                if ($this->isJobReadyToSchedule($job)) {
+                
+                    $this->queueControl->addNew($job);
+                    
                 }
 
             }
@@ -87,13 +89,18 @@ class Scheduler implements CliTask
         $ready = false;
         $now = time();
         $schedule = $job->getSchedule();
+        
+          switch ($schedule->getFrequency()) {
 
-        switch ($schedule->getFrequency()) {
-
-            case Schedule::NO_FREQUENCY:
-                $ready = $this->isReadyNoFrequency($schedule, $now);
+            case Schedule::ASAP:
+                 $ready = true;
                 break;
 
+            case Schedule::FIXED_TIME:
+
+                $ready = $this->isReadyFixedTime($schedule, $now);
+                break;
+            
             case Schedule::HOURLY:
                 break;
 
@@ -105,6 +112,8 @@ class Scheduler implements CliTask
 
         }
 
+        $this->log->info("Job ID: {$job->getId()} - \"{$job->getName()}\" - " . ($ready ? "ready to be scheduled" : "not ready"));
+
         return $ready;
 
     }
@@ -115,14 +124,9 @@ class Scheduler implements CliTask
      * @return bool
      * @throws \Exception
      */
-    private function isReadyNoFrequency(Schedule $schedule, $now)
+    private function isReadyFixedTime(Schedule $schedule, $now)
     {
-
-        //If this is an ASAP schedule then this job is ready to go
-        if ($schedule->getAsap() === true) {
-            return true;
-        }
-
+        
         if ($schedule->getDate() && $schedule->getTime()) {
             $this->log->error("No date or time provided for a 'No Frequency' schedule ");
             return false;

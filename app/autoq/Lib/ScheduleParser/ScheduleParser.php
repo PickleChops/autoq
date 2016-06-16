@@ -54,6 +54,7 @@ class ScheduleParser
 
             //if an integer is found check for minutes
             if ($tokenType == ScheduleLexer::TYPE_KEYWORD_ASAP) {
+                $this->schedule->setFrequency(Schedule::ASAP);
                 $this->schedule->setAsap(true);
             }
 
@@ -73,12 +74,20 @@ class ScheduleParser
     {
         //If an explicit date is set ignore other scheduling
         if (($date = $this->schedule->getDate()) !== false) {
-           $this->schedule->reset()->setDate($date);
+            $this->schedule->reset()->setDate($date);
+            $this->schedule->setFrequency(Schedule::FIXED_TIME);
+        }
+
+        //If just a time is set then assume fixed time
+        if (($time = $this->schedule->getTime()) !== false && $this->schedule->getFrequency() === false) {
+            $this->schedule->reset()->setTime($time);
+            $this->schedule->setFrequency(Schedule::FIXED_TIME);
         }
 
         //If ASAP found ignore others
         if (($asap = $this->schedule->getAsap()) !== false) {
             $this->schedule->reset()->setAsap($asap);
+            $this->schedule->setFrequency(Schedule::ASAP);
         }
     }
 

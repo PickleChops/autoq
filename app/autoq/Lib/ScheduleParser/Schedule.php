@@ -6,14 +6,25 @@ namespace Autoq\Lib\ScheduleParser;
 class Schedule
 {
 
-    const NO_FREQUENCY = 0;
-    const HOURLY = 1;
-    const DAILY = 2;
-    const WEEKLY = 3;
+    const ASAP = 1;
+    const FIXED_TIME = 2;
+    const HOURLY = 3;
+    const DAILY = 4;
+    const WEEKLY = 5;
+
+
+    static private $readableFrequency = [
+        self::ASAP => 'ASAP',
+        self::FIXED_TIME => 'Fixed time',
+        self::HOURLY => 'Hourly',
+        self::DAILY => 'Daily',
+        self::WEEKLY => 'Weekly'
+
+    ];
 
     private $flexible;
 
-    private $frequency = self::NO_FREQUENCY;
+    private $frequency = false;
     private $date = false;
     private $time = false;
     private $minute = false;
@@ -79,6 +90,14 @@ class Schedule
     {
         $this->flexible = $flexible;
         return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getReadableFrequency()
+    {
+        return array_get($this->frequency, self::$readableFrequency, 'Unknown');
     }
 
     /**
@@ -183,11 +202,12 @@ class Schedule
      */
     public function reset()
     {
-        $this->frequency = self::NO_FREQUENCY;
+        $this->frequency = false;
         $this->date = false;
         $this->minute = false;
         $this->hour = false;
         $this->day = false;
+        $this->asap = false;
 
         return $this;
     }
@@ -202,29 +222,37 @@ class Schedule
 
         $valid = false;
 
-        if ($this->frequency == self::NO_FREQUENCY) {
+        switch ($this->frequency) {
 
-
-            if($this->asap) {
+            case self::ASAP:
                 $valid = true;
-            } else if ($this->date !== false || $this->time !== false) {
+                break;
+
+            case self::FIXED_TIME:
+
+                if ($this->date !== false || $this->time !== false) {
+                    $valid = true;
+                }
+                break;
+
+            case self::HOURLY:
+
                 $valid = true;
-            }
+                break;
 
-        } elseif ($this->frequency == self::HOURLY) {
+            case self::DAILY:
 
-            $valid = true;
+                if ($this->time !== false) {
+                    $valid = true;
+                }
+                break;
 
-        } elseif ($this->frequency == self::DAILY) {
 
-            if ($this->time !== false) {
+            case self::WEEKLY:
+
                 $valid = true;
-            }
+                break;
 
-
-        } elseif ($this->frequency == self::WEEKLY) {
-
-            $valid = true;
         }
 
         return $valid;

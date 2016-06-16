@@ -6,13 +6,13 @@ use Autoq\Cli\Lib\JobScheduler;
 use Autoq\Cli\Scheduler;
 use Autoq\Data\Jobs\JobDefinition;
 use Autoq\Data\Jobs\JobsRepository;
-use Autoq\Data\Queue\QueueRepository;
+use Autoq\Data\Queue\QueueControl;
 use Autoq\Lib\ScheduleParser\Schedule;
 use Autoq\Tests\Autoq_TestCase;
 use Phalcon\Config;
 use Phalcon\Logger\Adapter\Stream;
 
-class JobSchedulerTest extends Autoq_TestCase
+class SchedulerTest extends Autoq_TestCase
 {
     public function testTimeOnlySchedule()
     {
@@ -31,9 +31,9 @@ class JobSchedulerTest extends Autoq_TestCase
             ->getMock();
 
         /**
-         * @var $queueRepo QueueRepository
+         * @var $queueRepo QueueControl
          */
-        $queueRepo = $this->getMockBuilder(QueueRepository::class)
+        $queueRepo = $this->getMockBuilder(QueueControl::class)
             ->setConstructorArgs([self::$di])
             ->getMock();
 
@@ -47,7 +47,6 @@ class JobSchedulerTest extends Autoq_TestCase
         $timeStr = date('H:i', $now + 1800);
 
         $job = new JobDefinition(['schedule' => $timeStr]);
-
 
         $ready = $scheduler->isJobReadyToSchedule($job);
 

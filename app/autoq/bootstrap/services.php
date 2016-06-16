@@ -31,13 +31,6 @@ $di->set(
 );
 
 /**
- * Bind in db connection service
- */
-$di->set('dBConnectionService', function () use ($di) {
-    return new \Autoq\Services\DatabaseConnections($di);
-});
-
-/**
  * Add router for web requests
  */
 $di->set(
@@ -46,6 +39,17 @@ $di->set(
         return require __DIR__ . '/../bootstrap/routes.php';
     }
 );
+
+/**
+ * Bind in db connection service
+ */
+$di->set('dBConnectionMgr', [
+    'className' => \Autoq\Services\DbConnectionMgr::class,
+    'arguments' => [
+        ['type' => 'service', 'name' => 'log'],
+        ['type' => 'service', 'name' => 'config']
+    ]
+]);
 
 /**
  * Bind in our job processor

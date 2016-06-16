@@ -76,7 +76,7 @@ class ScheduleParserTest extends \PHPUnit_Framework_TestCase
 
         // Assertions
         $this->assertEquals(true, $schedule instanceof Schedule);
-        $this->assertEquals(Schedule::NO_FREQUENCY,$schedule->getFrequency());
+        $this->assertEquals(Schedule::ASAP,$schedule->getFrequency());
         $this->assertEquals(true,$schedule->getAsap());
 
     }

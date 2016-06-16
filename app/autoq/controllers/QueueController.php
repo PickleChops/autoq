@@ -1,7 +1,7 @@
 <?php
 
 namespace Autoq\Controllers;
-use Autoq\Data\Queue\QueueRepository;
+use Autoq\Data\Queue\QueueControl;
 
 /**
  * Class QueueController Endpoints for /queue/ api calls
@@ -10,7 +10,7 @@ class QueueController extends BaseController
 {
 
     /**
-     * @var $repo QueueRepository
+     * @var $repo QueueControl
      */
     protected $repo;
 
@@ -20,7 +20,7 @@ class QueueController extends BaseController
     protected function initialize()
     {
         $this->apiHelper = $this->di->get('apiHelper');
-        $this->repo = $this->di->get(QueueRepository::class, [$this->getDI()]);
+        $this->repo = $this->di->get(QueueControl::class, [$this->getDI()]);
     }
 
     /**

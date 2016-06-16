@@ -51,20 +51,35 @@ class ApiHelper
      */
     public function responseSuccessWithData($content)
     {
-        if(is_object($content)) {
-            if($content instanceof Arrayable) {
-                $content = $content->toArray();
-            } else {
-                throw new \Exception("Object received, expected array");
+        $responseContent = [];
+
+        if(is_array($content)) {
+
+            foreach($content as $arrayItem) {
+                $responseContent[] = $this->convertObjectToArray($arrayItem);
             }
+
+        } else {
+            $responseContent = $this->convertObjectToArray($content);
         }
 
         $response = $this->initResponse();
-        $this->successResponse['data'] = $content;
+        $this->successResponse['data'] = $responseContent;
         $response->setJsonContent($this->successResponse);
 
         return $response;
 
+    }
+
+    private function convertObjectToArray($obj) {
+
+        if(is_object($obj)) {
+            if($obj instanceof Arrayable) {
+                return $obj->toArray();
+            } else {
+                throw new \Exception("Object received, expected array");
+            }
+        }
     }
 
     /**

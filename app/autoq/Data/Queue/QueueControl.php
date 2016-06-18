@@ -44,7 +44,7 @@ class QueueControl
 
         //Convert jobDefinition
         $jobDefinitionData = $jobDefinition->toArray();
-    
+
         $data['job_def'] = $jobDefinitionData;
         $data['flow_control'] = (new QueueFlow())->startStatus(QueueFlow::STATUS_NEW)->getFlowControl();
 
@@ -68,7 +68,7 @@ class QueueControl
         if ($next !== false && $next['id']) {
 
             //Add the key to id the staged resultset
-            $dataStageKey = $this->makeDataStageKey($next['id'], $next['job_id'] , $next['job_name']);
+            $dataStageKey = $this->makeDataStageKey($next['id'], $next['job_id'], $next['job_name']);
 
             $time = time();
 
@@ -78,8 +78,8 @@ class QueueControl
                                             where id = {$next['id']}");
 
             $this->dbConnection->commit();
-            
-            if($update) {
+
+            if ($update) {
                 $this->log->info("Queue ID {$next['id']} reserved for fetching");
             } else {
                 $this->log->error("There was a problem updating queue item in " . __CLASS__);
@@ -87,14 +87,31 @@ class QueueControl
 
             //Reread to get latest updates to row
             $next = $this->queueRepo->getById($next['id']);
-        
+
         } else {
             $this->dbConnection->commit();
         }
-        
+
         return $next;
 
     }
+
+    /**
+     * @param $queueId
+     * @param $statusToEnd
+     */
+    public function endStatus($queueId, $statusToEnd)
+    {
+        $jsonPath = "$.{$statusToEnd}.end"; 
+        $time = time();
+        
+        $this->dbConnection->execute("update job_queue 
+                                        set flow_control = json_set(flow_control, '$.NEW.end',{$time})
+                                        where id = {$queueId}");
+        
+        $this->log->info("Queue item ID: $queueId - Status");
+    }
+
 
     /**
      * @param JobDefinition $jobDefinition
@@ -122,10 +139,11 @@ class QueueControl
      * @param $jobName
      * @return string
      */
-    public function makeDataStageKey($queueItemId, $jobId, $jobName) {
+    public function makeDataStageKey($queueItemId, $jobId, $jobName)
+    {
 
         //Swap the whitespace for underscores to be more filename friendly
-        $result = substr(preg_replace("/\\s+/ui", "_", strtolower($jobName)),0,32);
+        $result = substr(preg_replace("/\\s+/ui", "_", strtolower($jobName)), 0, 32);
 
         $key = "{$queueItemId}_{$jobId}_$result";
 

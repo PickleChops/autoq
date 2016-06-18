@@ -79,7 +79,6 @@ class QueueFlow
      */
     public function startStatus($statusCode)
     {
-
         if (self::$templateByStatus[$statusCode] != self::STORE_STARTEND) {
             throw new \Exception("You are unable to start status {$this->getStatusName($statusCode)}");
         }
@@ -95,7 +94,6 @@ class QueueFlow
      */
     public function endStatus($statusCode)
     {
-
         if (self::$templateByStatus[$statusCode] != self::STORE_STARTEND) {
             throw new \Exception("You are unable to end status {$this->getStatusName($statusCode)}");
         }
@@ -104,16 +102,17 @@ class QueueFlow
         return $this;
     }
 
+    /**
+     * @param $statusCode
+     * @throws \Exception
+     */
     public function setOccuredTime($statusCode)
     {
-
         if (self::$templateByStatus[$statusCode] != self::STORE_OCCURED) {
             throw new \Exception("You are unable to set occured time on status {$this->getStatusName($statusCode)}");
         }
-
     }
-
-
+    
     /**
      * GetStatusName
      * @param $statusCode

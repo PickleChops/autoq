@@ -1,0 +1,3 @@
+package: autoqctl
+import:
+- package: gopkg.in/alecthomas/kingpin.v2

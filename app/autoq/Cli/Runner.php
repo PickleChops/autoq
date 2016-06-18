@@ -4,6 +4,7 @@ namespace Autoq\Cli;
 
 use Autoq\Data\Jobs\JobDefinition;
 use Autoq\Data\Queue\QueueControl;
+use Autoq\Data\Queue\QueueFlow;
 use Autoq\Data\Queue\QueueItem;
 use Autoq\Services\DbConnectionMgr;
 use Phalcon\Config;
@@ -68,14 +69,18 @@ class Runner implements CliTask
 
                     if ($this->hasResultSet($results)) {
 
-                        $this->logForQueueItem($queueItem, "Query returns a resultset, fetching data...");
+                        $this->logForQueueItem($queueItem, "Query returns a resultset, saving data...");
 
+                        $this->saveResultSetToStaging($queueItem, $results);
 
-                    } else {
-                        $this->logForQueueItem($queueItem, "No resultset received for this query, marking queue item complete");
-                        //Mark queue item complete
-                    }
+                        $this->queueControl->endStatus(QueueFlow::STATUS_FETCHING);
+                        
                     
+                    } else {
+                        $this->logForQueueItem($queueItem, "No resultset received for this query, fetching complete");
+                        $this->queueControl->endStatus(QueueFlow::STATUS_FETCHING);
+                    }
+
                     $connection = null;
 
                 } catch (\Exception $e) {
@@ -88,19 +93,24 @@ class Runner implements CliTask
             }
         }
     }
-    
-    private function saveResultSetToStaging($queueItem, $results) {
 
-        
+    /**
+     * @param QueueItem $queueItem
+     * @param \PDOStatement $results
+     * @throws \Exception
+     */
+    private function saveResultSetToStaging(QueueItem $queueItem, \PDOStatement $results)
+    {
+        $filename = $queueItem->getDataStageKey() . 'csv';
 
         if ($handle = fopen($filename, 'w')) {
 
             $rowsWritten = 0;
-            $writeError = false;
             $firstRow = true;
 
-            while (($row = $connection->fetch($result)) !== false) {	//Rely on lazy eval
+            while (($row = $results->fetch(\PDO::FETCH_ASSOC)) !== false) {
 
+                //Write header row
                 if ($firstRow) {
                     fputcsv($handle, array_keys($row));
                     $firstRow = false;
@@ -109,31 +119,17 @@ class Runner implements CliTask
                 if (fputcsv($handle, $row) !== false) {
                     $rowsWritten++;
                 } else {
-                    $this->errorMessage = 'Problem saving the csv file: ' . $filename;
-                    $this->log->_l($this->errorMessage, BasicLogger::ERROR);
-                    $writeError = true;
-                    break;
+                    fclose($handle);
+                    throw new \Exception("There was a problem saving the staging file: $filename");
                 }
             }
+
             fclose($handle);
 
-            if (!$writeError) {
-                $this->log->_l('File ' . $filename . ' saved ok. ' . $rowsWritten . ' rows written.');
-
-                $this->log->_l('Stripping bad ASCII control characters from ' . $filename);
-
-                $chr = chr(26);
-
-                $cmd = "sed -i 's/$chr//g' " . escapeshellarg($filename);
-                $this->log->_l('CMD: ' . $cmd);
-                system($cmd);
-
-                $success = true;
-            }
+            $this->log->info("$rowsWritten rows successfully written to $filename");
 
         } else {
-            $this->errorMessage = 'Unable to create file ' . $filename . ' for staging result set';
-            $this->log->_l($this->errorMessage);
+            throw new \Exception("Unable to create file $filename for staging result set");
         }
     }
 
@@ -143,9 +139,7 @@ class Runner implements CliTask
      */
     private function hasResultSet(\PDOStatement $results)
     {
-
         return $results->columnCount() > 0;
-
     }
 
     /**
@@ -155,7 +149,7 @@ class Runner implements CliTask
      */
     private function logForQueueItem(QueueItem $queueItem, $message, $type = Logger::INFO)
     {
-        $message = "Queue item: {$queueItem->getId()} for Job Id: {$queueItem->getJobDefintion()->getId()} ";
+        $message = "Queue item: {$queueItem->getId()} for Job Id: {$queueItem->getJobDefintion()->getId()} - $message";
 
         $this->log->log($type, $message);
     }

@@ -61,8 +61,7 @@ class QueueItem implements Arrayable
         return $data;
 
     }
-
-
+    
     /**
      * @return mixed
      */
@@ -112,9 +111,7 @@ class QueueItem implements Arrayable
     {
         $this->dataStageKey = $dataStageKey;
     }
-
-
-
+    
     /**
      * @return mixed
      */

@@ -107,7 +107,7 @@ class QueueControl
         $last = $this->dbConnection->fetchOne("
                 select * 
                 from job_queue 
-                where job_def->'$.id' = 4
+                where job_def->'$.id' = {$jobDefinition->getId()}
                     AND NOT (flow_control->'$.ERROR.occurred'
                      OR flow_control->'$.ABORTED.occurred' OR flow_control->'$.COMPLETED.occurred') 
                 order by id DESC limit 1");

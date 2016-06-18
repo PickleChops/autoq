@@ -1,12 +1,10 @@
 FROM php:5.6-fpm
 
 # Install modules
-RUN docker-php-ext-install mbstring
-RUN docker-php-ext-install bcmath
-RUN docker-php-ext-install pdo_mysql
-
-
-RUN pecl install xdebug
+RUN docker-php-ext-install mbstring \
+    && docker-php-ext-install bcmath \
+    && docker-php-ext-install pdo_mysql \
+    && pecl install xdebug
 
 #Add PHP YAML support
 RUN apt-get update && apt-get install -y libyaml-dev \

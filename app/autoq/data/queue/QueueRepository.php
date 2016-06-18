@@ -160,32 +160,36 @@ class QueueRepository extends BaseRepository
 
 
     /**
-     * Decode JSON representation of job defintion
+     * Hydrate a queue item record
      * @param $row
      * @return bool|mixed
      */
     protected function hydrate($row)
     {
+        $queueItemData = [];
 
         $jobDefinitionData = $this->convertFromJson($row['job_def'], 'job_def');
         $flowControl = $this->convertFromJson($row['flow_control'], 'flow_control');
-        
+
+        $queueItemData['job_def'] = $jobDefinitionData;
+        $queueItemData['flow_control'] = $flowControl;
 
         if ($jobDefinitionData === false || $flowControl === false) {
             $this->log->error("Unable to interpret queue item");
             return false;
         } else {
 
-            $definitionData['id'] = $row['id'];
-            $definitionData['created'] = $row['created'];
-            $definitionData['updated'] = $row['updated'];
+            $queueItemData['id'] = $row['id'];
+            $queueItemData['created'] = $row['created'];
+            $queueItemData['updated'] = $row['updated'];
+            $queueItemData['data_stage_key'] = $row['data_stage_key'];
 
 
-            $jobDefinition = new JobDefinition($definitionData);
+            $queueItem = new QueueItem($queueItemData);
 
         }
 
-        return $jobDefinition;
+        return $queueItem;
 
     }
 

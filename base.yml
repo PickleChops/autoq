@@ -62,16 +62,21 @@ services:
   runner:
     extends:
      service: basephp
+    volumes:
+    - staging:/usr/src/autoq/staging
     depends_on:
     - mysql
     command: [php, cli.php, Runner]
   sender:
     extends:
      service: basephp
+    volumes:
+    - staging:/usr/src/autoq/staging
     depends_on:
     - mysql
     command: [php, cli.php, Sender]
-
+volumes:
+ staging:
 
 
 

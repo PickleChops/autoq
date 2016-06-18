@@ -8,7 +8,34 @@ services:
   phpfpm:
     volumes:
     - ./infrastructure/php-fpm/config/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+  utils:
+    volumes:
+    - ./infrastructure/php-cli/config/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+    environment:
+    - PHP_IDE_CONFIG="serverName=docker"
+    - XDEBUG_CONFIG="remote_host=192.168.99.1;xdebug.idekey=PHPSTORM"
+  scheduler:
+    environment:
+    - PHP_IDE_CONFIG="serverName=docker"
+    - XDEBUG_CONFIG="remote_host=192.168.99.1;xdebug.idekey=PHPSTORM"
+    volumes:
+    - ./infrastructure/php-cli/config/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+  runner:
+    volumes:
+    - ./infrastructure/php-cli/config/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+    environment:
+    - PHP_IDE_CONFIG="serverName=docker"
+    - XDEBUG_CONFIG="remote_host=192.168.99.1;xdebug.idekey=PHPSTORM"
+  sender:
+    volumes:
+    - ./infrastructure/php-cli/config/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+    environment:
+    - PHP_IDE_CONFIG="serverName=docker"
+    - XDEBUG_CONFIG="remote_host=192.168.99.1;xdebug.idekey=PHPSTORM"
   postgres:
+    environment:
+    - POSTGRES_USER=autoq
+    - POSTGRES_PASSWORD=dev
     ports:
       - 5432:5432
   mysql:
@@ -19,7 +46,3 @@ services:
     - ./infrastructure/mysql/data/dev_user.sql:/docker-entrypoint-initdb.d/dev_user.sql
     environment:
     - MYSQL_ROOT_PASSWORD=dev
-
-
-
-

@@ -71,6 +71,11 @@ class ApiHelper
 
     }
 
+    /**
+     * @param $obj
+     * @return mixed
+     * @throws \Exception
+     */
     private function convertObjectToArray($obj) {
 
         if(is_object($obj)) {

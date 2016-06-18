@@ -4,72 +4,64 @@
 namespace Autoq\Data\Queue;
 
 
-class QueueItem
-{
-    
-    private $status;
-    private $statusReceived;
+use Autoq\Data\Arrayable;
+use Autoq\Data\Jobs\JobDefinition;
 
-    private $statusHistory = [];
+class QueueItem implements Arrayable
+{
 
     private $id;
     private $created;
     private $updated;
+    
+    /**
+     * @var $jobDefintion JobDefinition
+     */
     private $jobDefintion;
+    
+    /**
+     * @var $flowControl QueueFlow
+     */
+    private $flowControl;
+    
+    private $dataStageKey;
 
     /**
-     * @return mixed
+     * QueueItem constructor.
+     * @param $data
      */
-    public function getStatus()
+    public function __construct($data)
     {
-        return $this->status;
+        $this->setId($data['id']);
+        $this->setJobDefintion(new JobDefinition($data['job_def']));
+        $this->setCreated($data['created']);
+        $this->setUpdated($data['updated']);
+        $this->setDataStageKey($data['data_stage_key']);
+        
+        $this->setFlowControl($data['flow_control']);
     }
 
-    /**
-     * @param mixed $status
-     * @return QueueItem
-     */
-    public function setStatus($status)
-    {
-        $this->status = $status;
-        return $this;
-    }
 
     /**
-     * @return mixed
-     */
-    public function getStatusReceived()
-    {
-        return $this->statusReceived;
-    }
-
-    /**
-     * @param mixed $statusReceived
-     * @return QueueItem
-     */
-    public function setStatusReceived($statusReceived)
-    {
-        $this->statusReceived = $statusReceived;
-        return $this;
-    }
-
-    /**
+     * Convert a queue item object back to a plain array
      * @return array
+     * @throws \Exception
      */
-    public function getStatusHistory()
+    public function toArray()
     {
-        return $this->statusHistory;
+        $data = [];
+
+        $data['id'] = $this->getId();
+        $data['created'] = $this->getCreated();
+        $data['updated'] = $this->getUpdated();
+        $data['data_stage_key'] = $this->getDataStageKey();
+        $data['flow_control'] = $this->getFlowControl();
+        $data['job_def'] = $this->getJobDefintion()->toArray();
+
+        return $data;
+
     }
 
-    /**
-     * @param array $statusHistory
-     * @return QueueItem
-     */
-    public function setStatusHistory($statusHistory)
-    {
-        $this->statusHistory = $statusHistory;
-        return $this;
-    }
 
     /**
      * @return mixed
@@ -88,6 +80,40 @@ class QueueItem
         $this->id = $id;
         return $this;
     }
+
+    /**
+     * @return QueueFlow
+     */
+    public function getFlowControl()
+    {
+        return $this->flowControl;
+    }
+
+    /**
+     * @param QueueFlow $flowControl
+     */
+    public function setFlowControl($flowControl)
+    {
+        $this->flowControl = $flowControl;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDataStageKey()
+    {
+        return $this->dataStageKey;
+    }
+
+    /**
+     * @param mixed $dataStageKey
+     */
+    public function setDataStageKey($dataStageKey)
+    {
+        $this->dataStageKey = $dataStageKey;
+    }
+
+
 
     /**
      * @return mixed

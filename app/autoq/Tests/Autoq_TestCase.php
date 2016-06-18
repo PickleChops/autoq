@@ -127,7 +127,7 @@ class Autoq_TestCase extends \PHPUnit_Framework_TestCase
      * @param $table
      */
     protected static function backupAndClearTableForTesting($table) {
-
+        
         self::backupTable($table);
         self::truncateTable($table);
 

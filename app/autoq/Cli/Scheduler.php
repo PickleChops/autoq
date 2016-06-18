@@ -50,7 +50,7 @@ class Scheduler implements CliTask
         while (true) {
 
             //Get the currently defined jobs
-            $this->log->debug("Looking for job definitions");
+            $this->log->debug("Looking for job definitions...");
 
             /**
              * @var $jobs JobDefinition[]

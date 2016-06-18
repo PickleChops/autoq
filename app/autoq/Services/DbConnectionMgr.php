@@ -130,8 +130,8 @@ class DbConnectionMgr
                 ));
 
             } catch (\PDOException $e) {
+                $this->log->warning("Connection failure attempt $attempts of $retries to host: {$config['host']} database: {$config['dbname']} message: {$e->getMessage()}");
                 $attempts++;
-                $this->log->warning("Connection failure attempt $attempts of $retries to host: {$config['host']} database: {$config['dbname']}");
             }
 
             if ($connection instanceof $adapter) {

@@ -8,5 +8,6 @@
 
 #Composer
 /vendor
+/app/autoqctl/src/gopl.io
 
 

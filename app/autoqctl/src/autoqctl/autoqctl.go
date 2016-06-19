@@ -12,11 +12,22 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"encoding/json"
+	"html/template"
 )
 
 const (
 	apiHost = "http://autoq.localdev"
+	apiError = "error"
+	apiSuccess = "success"
 )
+
+//!+template
+const templ = `{{.Status}} issues:
+Name:   {{.Data.Name}}----------------------------------------
+Number: {{.Data.Id}}
+User:   {{.Data.Connection}}
+Title:  {{.Data.Query | printf "%.64s"}}`
 
 var (
 	name       = kingpin.Flag("name", "The name of your job.").Short('d').String()
@@ -27,15 +38,40 @@ var (
 	file       = kingpin.Flag("file", "A YAML job definiton file.").Short('f').String()
 )
 
-type Output struct {
+type ApiResponse struct {
+	Status string
+	Reason string
+	Data ApiResponseData
 }
 
-type JobDefinition struct {
+type ApiResponseData struct {
+	Id int
+	Name string
+	Query string
+	Created string
+	Updated string
+	Schedule string
+	Connection string
+	Outputs []Output
+}
+
+type ApiStatusResponse struct {
+	Status string
+}
+
+type Output struct {
+	Type string
+	Address string
+	Format string
 }
 
 var out io.Writer = os.Stdout
 
 var logger *log.Logger
+
+var report = template.Must(template.New("issuelist").Parse(templ))
+
+
 
 // Off we go
 func main() {
@@ -71,18 +107,60 @@ func main() {
 			logger.Fatalf("You must specify an email address!")
 		} else {
 			logger.Printf("You are posting a job to Autoq: name \"" + *name + "\" on connection " + *connection + " with schedule " + *schedule + " that will be delivered to email " + *email)
+
 			postBody := buildPostBodyFromFlags(*name, *connection, *schedule, *query, *email)
+
 			resp, _ := postToAutoq(postBody)
-			fmt.Println("function response:", resp)
+
+			apiResp := unmarshallResponse(resp)
+
+			if err := report.Execute(os.Stdout, apiResp); err != nil {
+				log.Fatal(err)
+			}
+
 		}
 	}
 
 }
 
+
+
+
+
+//Return unmarshalled API response
+func unmarshallResponse(resp []byte) ApiResponse {
+
+	var apiResp ApiResponse
+
+	if err := json.Unmarshal(resp, &apiResp); err != nil {
+		logger.Fatalf("Problem reaading api response: %s", err)
+	}
+
+	if apiResp.Status != apiError && apiResp.Status != apiSuccess {
+		logger.Fatalf("Unknown status response: %s", apiResp.Status)
+	}
+
+	return apiResp
+
+}
+
+//Get the status we received back from an Api call
+func getApiStatus(resp []byte) string {
+
+	var apiError ApiStatusResponse
+
+	if err := json.Unmarshal(resp, &apiError); err != nil {
+		logger.Fatalf("Problem reaading api response: %s", err)
+	}
+
+	return apiError.Status
+}
+
+
 //Build our basic post payload
 func buildPostBodyFromFlags(name string, connection string, schedule string, query string, email string) []byte {
 
-	bodyString := fmt.Sprintf("name: %s\nconnection: %s\n", name, connection)
+	bodyString := fmt.Sprintf("name: %s\nconnection: %s\nschedule: %s\nquery: %s\noutputs:\n  - type: email\n    address: %s\n", name, connection, schedule, query, email)
 
 	return []byte(bodyString)
 }
@@ -108,7 +186,7 @@ func apiGetRequest(requestUri string) string {
 }
 
 // Post contents to /jobs/ on Autoq
-func postToAutoq(postBody []byte) (string, error) {
+func postToAutoq(postBody []byte) ([]byte, error) {
 
 	url := apiHost + "/jobs/"
 
@@ -131,6 +209,6 @@ func postToAutoq(postBody []byte) (string, error) {
 		logger.Fatalf(fmt.Sprintf("autoqctl: %v\n", err))
 	}
 
-	return string(body), err
+	return body, err
 
 }

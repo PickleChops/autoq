@@ -96,6 +96,9 @@ class Scheduler implements CliTask
         switch ($schedule->getFrequency()) {
 
             case Schedule::ASAP:
+                
+                
+                
                 $ready = true;
                 break;
 
@@ -115,7 +118,7 @@ class Scheduler implements CliTask
 
         }
 
-        $this->logForJob($job, "\"{$job->getName()}\" - " . ($ready ? "will be added to queue..." : "not ready for scheduling"));
+        $this->logForJob($job, "\"{$job->getScheduleOriginal()}\" - " . ($ready ? "will be added to queue..." : "not ready for scheduling"));
 
         return $ready;
 

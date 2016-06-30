@@ -11,7 +11,7 @@ outputs:
     format: csv
   - type: email
     address: boydi@boydi.com
-    format: html
+    style: html
   - type: email
     address: sid@boydi.com
-    format: html
+    style: html

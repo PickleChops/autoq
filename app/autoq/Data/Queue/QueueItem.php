@@ -20,7 +20,7 @@ class QueueItem implements Arrayable
     private $jobDefintion;
     
     /**
-     * @var $flowControl QueueFlow
+     * @var $flowControl FlowControl
      */
     private $flowControl;
     
@@ -38,7 +38,7 @@ class QueueItem implements Arrayable
         $this->setUpdated($data['updated']);
         $this->setDataStageKey($data['data_stage_key']);
         
-        $this->setFlowControl($data['flow_control']);
+        $this->setFlowControl(new FlowControl($data['flow_control']));
     }
 
 
@@ -55,7 +55,7 @@ class QueueItem implements Arrayable
         $data['created'] = $this->getCreated();
         $data['updated'] = $this->getUpdated();
         $data['data_stage_key'] = $this->getDataStageKey();
-        $data['flow_control'] = $this->getFlowControl();
+        $data['flow_control'] = $this->getFlowControl()->toArray();
         $data['job_def'] = $this->getJobDefintion()->toArray();
 
         return $data;
@@ -81,7 +81,7 @@ class QueueItem implements Arrayable
     }
 
     /**
-     * @return QueueFlow
+     * @return FlowControl
      */
     public function getFlowControl()
     {
@@ -89,7 +89,7 @@ class QueueItem implements Arrayable
     }
 
     /**
-     * @param QueueFlow $flowControl
+     * @param FlowControl $flowControl
      */
     public function setFlowControl($flowControl)
     {
@@ -149,7 +149,7 @@ class QueueItem implements Arrayable
     }
 
     /**
-     * @return mixed
+     * @return JobDefinition
      */
     public function getJobDefintion()
     {

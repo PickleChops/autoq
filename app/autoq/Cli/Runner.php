@@ -2,13 +2,13 @@
 
 namespace Autoq\Cli;
 
-use Autoq\Data\Jobs\JobDefinition;
 use Autoq\Data\Queue\QueueControl;
-use Autoq\Data\Queue\QueueFlow;
+use Autoq\Data\Queue\FlowControl;
 use Autoq\Data\Queue\QueueItem;
 use Autoq\Services\DbConnectionMgr;
 use Phalcon\Config;
 use Phalcon\Db\Adapter;
+use Phalcon\Db\ResultInterface;
 use Phalcon\Logger;
 use Phalcon\Logger\Adapter\Stream;
 
@@ -62,9 +62,6 @@ class Runner implements CliTask
 
                     $this->logForQueueItem($queueItem, "Connection to database established, now executing job query..");
 
-                    /**
-                     * @var $results \PDOStatement
-                     */
                     $results = $connection->query($queueItem->getJobDefintion()->getQuery());
 
                     if ($this->hasResultSet($results)) {
@@ -72,43 +69,46 @@ class Runner implements CliTask
                         $this->logForQueueItem($queueItem, "Query returns a resultset, saving data...");
 
                         $this->saveResultSetToStaging($queueItem, $results);
-
-                        $this->queueControl->endStatus(QueueFlow::STATUS_FETCHING);
-                        
-                    
+                     
                     } else {
                         $this->logForQueueItem($queueItem, "No resultset received for this query, fetching complete");
-                        $this->queueControl->endStatus(QueueFlow::STATUS_FETCHING);
                     }
 
-                    $connection = null;
+                    $this->queueControl->updateStatus($queueItem, FlowControl::STATUS_FETCHING_COMPLETE);
+                    $connection = null; //Clear db connection
 
                 } catch (\Exception $e) {
-                    //log error
-                    //Set job as in error state
-                    //Record the error in queue
+                    //If an exception happens whlst running mark change queue status to ERROR, and log 
+                    $errMsg = $e->getMessage();
+                    $queueItem->getFlowControl()->setErrorMessage($errMsg);
+                    $this->queueControl->updateStatus($queueItem, FlowControl::STATUS_ERROR);
+                    $this->logForQueueItem($queueItem, $errMsg, Logger::ERROR);
                 }
 
-
+                sleep($this->config['app']['runner_sleep']);
             }
         }
     }
 
     /**
      * @param QueueItem $queueItem
-     * @param \PDOStatement $results
+     * @param ResultInterface $results
      * @throws \Exception
      */
-    private function saveResultSetToStaging(QueueItem $queueItem, \PDOStatement $results)
+    private function saveResultSetToStaging(QueueItem $queueItem, ResultInterface $results)
     {
-        $filename = $queueItem->getDataStageKey() . 'csv';
+        $dir = rtrim($this->config['app']['runner_staging_dir'], '/') . '/';
+        
+        $filepath = $dir . $queueItem->getDataStageKey() . '.csv';
 
-        if ($handle = fopen($filename, 'w')) {
+        if ($handle = fopen($filepath, 'w')) {
 
             $rowsWritten = 0;
             $firstRow = true;
 
-            while (($row = $results->fetch(\PDO::FETCH_ASSOC)) !== false) {
+            $results->setFetchMode(\PDO::FETCH_ASSOC);
+
+            while (($row = $results->fetch()) !== false) {
 
                 //Write header row
                 if ($firstRow) {
@@ -120,26 +120,28 @@ class Runner implements CliTask
                     $rowsWritten++;
                 } else {
                     fclose($handle);
-                    throw new \Exception("There was a problem saving the staging file: $filename");
+                    throw new \Exception("There was a problem saving the staging file: $filepath");
                 }
             }
 
             fclose($handle);
 
-            $this->log->info("$rowsWritten rows successfully written to $filename");
+            $this->log->info("$rowsWritten rows successfully written to $filepath");
 
         } else {
-            throw new \Exception("Unable to create file $filename for staging result set");
+            throw new \Exception("Unable to create file $filepath for staging result set");
         }
     }
 
     /**
-     * @param \PDOStatement $results
+     * @param ResultInterface $results
      * @return bool
      */
-    private function hasResultSet(\PDOStatement $results)
+    private function hasResultSet(ResultInterface $results)
     {
-        return $results->columnCount() > 0;
+        $pdoResult = $results->getInternalResult();
+
+        return $pdoResult->columnCount() > 0;
     }
 
     /**

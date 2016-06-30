@@ -46,7 +46,7 @@ class QueueControl
         $jobDefinitionData = $jobDefinition->toArray();
 
         $data['job_def'] = $jobDefinitionData;
-        $data['flow_control'] = (new QueueFlow())->startStatus(QueueFlow::STATUS_NEW)->getFlowControl();
+        $data['flow_control'] = (new FlowControl())->setStatus(FlowControl::STATUS_NEW)->toArray();
 
         return $this->queueRepo->save($data);
     }
@@ -62,8 +62,8 @@ class QueueControl
         $next = $this->dbConnection->fetchOne("select id, job_def->'$.id' as job_id, json_unquote(job_def->'$.name') as job_name 
                 from job_queue
     			where
-                    flow_control->'$.NEW.begin' AND NOT flow_control->'$.NEW.end'
-                order by flow_control->'$.NEW.begin' limit 1 for update");
+                    flow_control->'$.status' = 'NEW'
+                order by flow_control->'$.status_time' limit 1 for update");
 
         if ($next !== false && $next['id']) {
 
@@ -73,7 +73,7 @@ class QueueControl
             $time = time();
 
             $update = $this->dbConnection->execute("update job_queue
-                                            set flow_control = json_set(flow_control, '$.NEW.end',{$time},'$.FETCHING.new', {$time}), 
+                                            set flow_control = json_set(flow_control, '$.status','FETCHING','$.status_time', {$time}, '$.status_history.FETCHING',{$time}), 
                                             data_stage_key = '{$dataStageKey}'
                                             where id = {$next['id']}");
 
@@ -97,21 +97,46 @@ class QueueControl
     }
 
     /**
-     * @param $queueId
-     * @param $statusToEnd
+     * @return array
      */
-    public function endStatus($queueId, $statusToEnd)
+    public function grabNextToSend()
     {
-        $jsonPath = "$.{$statusToEnd}.end"; 
-        $time = time();
-        
-        $this->dbConnection->execute("update job_queue 
-                                        set flow_control = json_set(flow_control, '$.NEW.end',{$time})
-                                        where id = {$queueId}");
-        
-        $this->log->info("Queue item ID: $queueId - Status");
-    }
 
+        $this->dbConnection->begin();
+
+        $next = $this->dbConnection->fetchOne("select id, job_def->'$.id' as job_id, json_unquote(job_def->'$.name') as job_name 
+                from job_queue
+    			where
+                    flow_control->'$.status' = 'FETCHING_COMPLETE'
+                order by flow_control->'$.status_time' limit 1 for update");
+
+
+        if ($next !== false && $next['id']) {
+            
+            $time = time();
+
+            $update = $this->dbConnection->execute("update job_queue
+                                            set flow_control = json_set(flow_control, '$.status','SENDING','$.status_time', {$time}, '$.status_history.SENDING',{$time})
+                                            where id = {$next['id']}");
+
+            $this->dbConnection->commit();
+
+            if ($update) {
+                $this->log->info("Queue ID {$next['id']} reserved for sending");
+            } else {
+                $this->log->error("There was a problem updating queue item in " . __CLASS__);
+            }
+
+            //Reread to get latest updates to row
+            $next = $this->queueRepo->getById($next['id']);
+
+        } else {
+            $this->dbConnection->commit();
+        }
+
+        return $next;
+
+    }
 
     /**
      * @param JobDefinition $jobDefinition
@@ -119,15 +144,13 @@ class QueueControl
      */
     public function getLastCompletedOrActiveWithInWindow(JobDefinition $jobDefinition)
     {
-        $jobId = $jobDefinition->getId();
-
         $last = $this->dbConnection->fetchOne("
                 select * 
                 from job_queue 
                 where job_def->'$.id' = {$jobDefinition->getId()}
-                    AND NOT (flow_control->'$.ERROR.occurred'
-                     OR flow_control->'$.ABORTED.occurred' OR flow_control->'$.COMPLETED.occurred') 
-                order by id DESC limit 1");
+                    AND NOT (flow_control->'$.status' = 'ERROR'
+                     OR flow_control->'$.status' = 'ABORTED' OR flow_control->'$.status' = 'COMPLETED') 
+                order by id DESC limit 1;");
 
         return $last;
     }
@@ -148,6 +171,32 @@ class QueueControl
         $key = "{$queueItemId}_{$jobId}_$result";
 
         return $key;
+    }
+
+    /**
+     * @param QueueItem $queueItem
+     * @param $status
+     * @throws \Exception
+     */
+    public function updateStatus(QueueItem $queueItem, $status)
+    {
+
+        $time = time();
+
+        $this->dbConnection->execute("update job_queue
+                                      set flow_control = json_set(flow_control, 
+                                        '$.status','$status','$.status_time', {$time}, 
+                                        '$.status_history.{$status}', {$time},
+                                        '$.error_message', '{$queueItem->getFlowControl()->getErrorMessage()}'
+                                        ) 
+                                      where id = {$queueItem->getId()}");
+
+
+        if (($updated = $this->dbConnection->affectedRows()) != 1) {
+            throw new \Exception("Incorrect update in " . __METHOD__ . " $updated items updated!");
+        }
+
+        $this->log->info("Queue Item: {$queueItem->getId()} - Status changed to $status");
     }
 
     /**

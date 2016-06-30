@@ -7,6 +7,7 @@ use Autoq\Cli\Scheduler;
 use Autoq\Data\Jobs\JobDefinition;
 use Autoq\Data\Jobs\JobsRepository;
 use Autoq\Data\Queue\QueueControl;
+use Autoq\Data\Queue\QueueRepository;
 use Autoq\Lib\ScheduleParser\Schedule;
 use Autoq\Tests\Autoq_TestCase;
 use Phalcon\Config;
@@ -31,14 +32,21 @@ class SchedulerTest extends Autoq_TestCase
             ->getMock();
 
         /**
-         * @var $queueRepo QueueControl
+         * @var $queueRepo QueueRepository
          */
-        $queueRepo = $this->getMockBuilder(QueueControl::class)
+        $queueRepo = $this->getMockBuilder(QueueRepository::class)
             ->setConstructorArgs([self::$di])
             ->getMock();
 
+        /**
+         * @var $queueControl QueueControl
+         */
+        $queueControl = $this->getMockBuilder(QueueControl::class)
+            ->setConstructorArgs([self::$config, $log, $queueRepo])
+            ->getMock();
 
-        $scheduler = new Scheduler(self::$config, $log, $jobRepo, $queueRepo);
+
+        $scheduler = new Scheduler(self::$config, $log, $jobRepo, $queueControl);
 
         $scheduler->setTimeHorizon(3600);
 

@@ -46,3 +46,11 @@ services:
     - ./infrastructure/mysql/data/dev_user.sql:/docker-entrypoint-initdb.d/dev_user.sql
     environment:
     - MYSQL_ROOT_PASSWORD=dev
+  postfix:
+    build: ./infrastructure/postfix
+    image: skytsar/postfix
+    expose:
+    - 25
+    environment:
+    - maildomain=autoq.localdev
+    - smtp_user=email:password

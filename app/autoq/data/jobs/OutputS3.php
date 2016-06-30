@@ -7,12 +7,10 @@ class OutputS3 extends Output
 {
     private $bucket;
     
-    
     public function __construct($data)
     {
         $this->setType(JobDefinition::OUTPUT_S3);
         $this->setBucket($data['bucket']);
-        $this->setFormat($data['format']);
     }
 
     /**
@@ -40,7 +38,6 @@ class OutputS3 extends Output
         return [
                 'type' => $this->getType(),
                 'bucket' => $this->getBucket(),
-                'format' => $this->getFormat()
         ];
     }
     

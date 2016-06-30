@@ -6,7 +6,8 @@
   },
   "require": {
     "vlucas/phpdotenv": "^2.2",
-    "symfony/yaml": "^3.0"
+    "symfony/yaml": "^3.0",
+    "swiftmailer/swiftmailer": "^5.4"
 
   },
 

@@ -137,8 +137,8 @@ $di->set('Sender', [
     'arguments' => [
         ['type' => 'service', 'name' => 'config'],
         ['type' => 'service', 'name' => 'log'],
-        ['type' => 'service', 'name' => 'jobRepo'],
-        ['type' => 'service', 'name' => 'queueControl']
+        ['type' => 'service', 'name' => 'queueControl'],
+        ['type' => 'service', 'name' => 'dBConnectionMgr']
     ]
 ]);
 

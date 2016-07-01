@@ -34,6 +34,7 @@ before_install:
     - make up
     - sleep 30
     - docker ps -a
+    - docker logs autoq_sender_1 #Debug
 
 script:
     - make tests

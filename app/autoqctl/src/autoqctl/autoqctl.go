@@ -22,37 +22,48 @@ const (
 	apiSuccess = "success"
 )
 
-//!+template
-const templ = `{{.Status}} issues:
-Name:   {{.Data.Name}}----------------------------------------
-Number: {{.Data.Id}}
-User:   {{.Data.Connection}}
-Title:  {{.Data.Query | printf "%.64s"}}`
+//Templates
+
+// /add/ success
+const addTemplSuccess = `
+Status:   {{.Status}}
+Job Name: {{.Data.Name}}
+Job ID:   {{.Data.Id}}
+Schedule: {{.Data.Schedule}}
+
+`
+
+// api error
+const apiErrorTempl = `
+Status:   {{.Status}}
+Reason:   {{.Reason}}
+
+`
 
 var (
-	name       = kingpin.Flag("name", "The name of your job.").Short('d').String()
+	name = kingpin.Flag("name", "The name of your job.").Short('d').String()
 	connection = kingpin.Flag("connection", "The name of the connection you want to use for your job.").Short('c').Default("default").String()
-	schedule   = kingpin.Flag("schedule", "When you would like to run a job.").Short('s').Default("ASAP").String()
-	query      = kingpin.Flag("query", "The query that your job will run.").Short('q').PlaceHolder("\" <your SQL query> \"").String()
-	email      = kingpin.Flag("email", "The email address that will receive the query results.").Short('e').String()
-	file       = kingpin.Flag("file", "A YAML job definiton file.").Short('f').String()
+	schedule = kingpin.Flag("schedule", "When you would like to run a job.").Short('s').Default("ASAP").String()
+	query = kingpin.Flag("query", "The query that your job will run.").Short('q').PlaceHolder("\" <your SQL query> \"").String()
+	email = kingpin.Flag("email", "The email address that will receive the query results.").Short('e').String()
+	file = kingpin.Flag("file", "A YAML job definiton file.").Short('f').String()
 )
 
 type ApiResponse struct {
 	Status string
 	Reason string
-	Data ApiResponseData
+	Data   ApiResponseData
 }
 
 type ApiResponseData struct {
-	Id int
-	Name string
-	Query string
-	Created string
-	Updated string
-	Schedule string
+	Id         int
+	Name       string
+	Query      string
+	Created    string
+	Updated    string
+	Schedule   string
 	Connection string
-	Outputs []Output
+	Outputs    []Output
 }
 
 type ApiStatusResponse struct {
@@ -60,24 +71,20 @@ type ApiStatusResponse struct {
 }
 
 type Output struct {
-	Type string
+	Type    string
 	Address string
-	Format string
+	Format  string
 }
 
 var out io.Writer = os.Stdout
 
 var logger *log.Logger
 
-var report = template.Must(template.New("issuelist").Parse(templ))
-
-
-
 // Off we go
 func main() {
 
 	//Kick off a logger
-	logger = log.New(out, "", log.Ldate|log.Ltime)
+	logger = log.New(out, "", log.Ldate | log.Ltime)
 
 	//Parse the command line flags provided
 	kingpin.Parse()
@@ -94,9 +101,11 @@ func main() {
 			logger.Fatalf(fmt.Sprintf("autoqctl: %v\n", err))
 		}
 
-		resp, err := postToAutoq(fileContents)
+		resp, _ := postToAutoq(fileContents)
 
-		fmt.Println("function response:", resp)
+		apiResp := unmarshallResponse(resp)
+
+		displayAddResponse(apiResp);
 
 	} else {
 		if *name == "" {
@@ -114,16 +123,32 @@ func main() {
 
 			apiResp := unmarshallResponse(resp)
 
-			if err := report.Execute(os.Stdout, apiResp); err != nil {
-				log.Fatal(err)
-			}
+			displayAddResponse(apiResp);
 
 		}
 	}
 
 }
 
+func displayAddResponse(apiResp ApiResponse) {
 
+	if apiResp.Status == apiSuccess {
+
+		var display = template.Must(template.New("JobAddSuccess").Parse(addTemplSuccess))
+
+		if err := display.Execute(os.Stdout, apiResp); err != nil {
+			log.Fatal(err)
+		}
+
+	} else {
+		var display = template.Must(template.New("JobAddError").Parse(apiErrorTempl))
+
+		if err := display.Execute(os.Stdout, apiResp); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+}
 
 
 
@@ -200,8 +225,6 @@ func postToAutoq(postBody []byte) ([]byte, error) {
 	if err != nil {
 		logger.Fatalf(fmt.Sprintf("autoqctl: %v\n", err))
 	}
-
-	fmt.Println("response Code:", resp.StatusCode)
 
 	body, err := ioutil.ReadAll(resp.Body)
 

@@ -60,7 +60,7 @@ class QueueRepository extends BaseRepository
 
         try {
 
-            $results = $this->simpleSelect($this->dBConnection,'job_queue', null, null, $limit, [$this, 'hydrate']);
+            $results = $this->simpleSelect($this->dBConnection,'job_queue', null, 'id DESC', $limit, [$this, 'hydrate']);
 
         } catch (Exception $e) {
             $this->log->error("Unable to fetch queue items.");

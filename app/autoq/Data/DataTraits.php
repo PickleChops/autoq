@@ -24,6 +24,7 @@ trait DataTraits
         $orderString = $orderString == '' ? null : 'ORDER BY ' . $orderString;
         $limitString = $limitString == '' ? null : 'LIMIT ' . $limitString;
 
+
         $result = $connection->fetchAll("SELECT * FROM `$table` $whereString $orderString $limitString", Db::FETCH_ASSOC);
 
 

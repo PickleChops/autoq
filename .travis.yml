@@ -32,11 +32,10 @@ before_install:
     - cp ./app/autoq/travis.env ./app/autoq/.env
     - make compose
     - make up
-    - docker version
-    - docker-compose version
+    - sleep 30
+    - docker ps -a
 
 script:
-    - docker ps -a
     - make tests
 
 

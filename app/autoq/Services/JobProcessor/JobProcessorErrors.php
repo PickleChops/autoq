@@ -28,7 +28,7 @@ class JobProcessorErrors
         self::MSG_NO_SCHEDULE => "No schedule provided",
         self::MSG_NO_OUTPUT => "No output(s) provided",
         self::MSG_NO_CONNECTION => "No connection provided",
-        self::MSG_CONNECTION_NOT_DEFAULT => "Only the default connection is currently supported'",
+        self::MSG_CONNECTION_NOT_DEFAULT => "Only the default connection is currently supported",
         self::MSG_FIELD_DATA_TOO_LONG => "Field data must be 255 characters or less",
         self::MSG_UNABLE_TO_PARSE_SCHEDULE => "Unable to parse the schedule"
     ];

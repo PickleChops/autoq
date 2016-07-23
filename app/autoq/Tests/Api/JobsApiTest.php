@@ -128,23 +128,34 @@ class JobsApiTest extends Autoq_TestCase
     }
 
     /**
+     * API call to /jobs/{id} PUT verb
      * @depends testGetJob
      * @param $id
      */
-    public function testupdateJob($id)
+    public function testUpdateJob($id)
     {
-
+        //Load up an example job definition
         $resource = $this->getDataFileResource('example_job_2.yaml');
+
+        //HTTP PUT this to the server (update an existing job)
         $rawResponse = $this->client->request('PUT', "/jobs/$id", ['body' => $resource]);
 
+        //Get the response
         $response = json_decode($rawResponse->getBody());
 
+        //Assert we got success back from REST call
         $this->assertEquals('success', $response->status);
 
+        //Get the data payload in response
         $data = $response->data;
 
+        //Check the job ID returned is the one we intended to update
         $this->assertEquals($id, $data->id);
+
+        //Check created date is there
         $this->assertNotNull($data->created);
+
+        //Check update date is there
         $this->assertNotNull($data->updated);
 
         return $id;
@@ -152,7 +163,7 @@ class JobsApiTest extends Autoq_TestCase
     }
 
     /**
-     * @depends testupdateJob
+     * @depends testUpdateJob
      * @param $id
      * @return bool
      */

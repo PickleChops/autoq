@@ -12,6 +12,12 @@ $settings = [
         'sender_sleep' => getenv('APP_SENDER_SLEEP')
     ],
     
+    "s3" => [
+      
+        'default_key' => getenv('S3_DEFAULT_KEY'),
+        'default_secret' => getenv('S3_DEFAULT_SECRET'),
+    ],
+    
     "mysql" => [
         "adapter" => \Phalcon\Db\Adapter\Pdo\Mysql::class,
         "host" => getenv('DATABASE_HOST'),

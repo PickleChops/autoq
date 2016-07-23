@@ -40,6 +40,13 @@ deploy:
 scheduler-logs:
 	-$(call show_logs,scheduler)
 
+runner-logs:
+	-$(call show_logs,runner)
+
+sender-logs:
+	-$(call show_logs,sender)
+
+
 logs:
 	-$(call show_logs)
 

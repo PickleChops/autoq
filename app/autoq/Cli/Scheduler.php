@@ -62,6 +62,8 @@ class Scheduler implements CliTask
             // Loop through the jobs looking for jobs that are ready to schedule
 
             foreach ($jobs as $job) {
+                
+    //            $window = $this->getScheduleWindow($job->getSchedule());
 
                 if (($last = $this->queueControl->getLastCompletedOrActiveWithInWindow($job)) === false) {
 

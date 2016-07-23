@@ -40,6 +40,24 @@ $di->set(
     }
 );
 
+
+/**
+ * Add simple view capability
+ */
+$di->set(
+    'view',
+    function () {
+
+        $view = new \Phalcon\Mvc\View\Simple();
+
+        $view->setViewsDir('./views/');
+
+        return $view;
+
+    }, true
+);
+
+
 /**
  * Bind in db connection service
  */
@@ -87,7 +105,6 @@ $di->set('queueRepo', [
         ]
     ]
 );
-
 
 
 /**
@@ -138,7 +155,8 @@ $di->set('Sender', [
         ['type' => 'service', 'name' => 'config'],
         ['type' => 'service', 'name' => 'log'],
         ['type' => 'service', 'name' => 'queueControl'],
-        ['type' => 'service', 'name' => 'dBConnectionMgr']
+        ['type' => 'service', 'name' => 'dBConnectionMgr'],
+        ['type' => 'service', 'name' => 'view']
     ]
 ]);
 

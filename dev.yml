@@ -13,25 +13,15 @@ services:
     - ./infrastructure/php-cli/config/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
     environment:
     - PHP_IDE_CONFIG="serverName=docker"
-    - XDEBUG_CONFIG="remote_host=192.168.99.1;xdebug.idekey=PHPSTORM"
   scheduler:
-    environment:
-    - PHP_IDE_CONFIG="serverName=docker"
-    - XDEBUG_CONFIG="remote_host=192.168.99.1;xdebug.idekey=PHPSTORM"
     volumes:
     - ./infrastructure/php-cli/config/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
   runner:
     volumes:
     - ./infrastructure/php-cli/config/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
-    environment:
-    - PHP_IDE_CONFIG="serverName=docker"
-    - XDEBUG_CONFIG="remote_host=192.168.99.1;xdebug.idekey=PHPSTORM"
   sender:
     volumes:
     - ./infrastructure/php-cli/config/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
-    environment:
-    - PHP_IDE_CONFIG="serverName=docker"
-    - XDEBUG_CONFIG="remote_host=192.168.99.1;xdebug.idekey=PHPSTORM"
   postgres:
     environment:
     - POSTGRES_USER=autoq
@@ -47,10 +37,9 @@ services:
     environment:
     - MYSQL_ROOT_PASSWORD=dev
   postfix:
-    build: ./infrastructure/postfix
+    hostname: mail.autoq.localdev
+    env_file: ./app/autoq/postfix.env
+    build: ./infrastructure/postfix-relay
     image: skytsar/postfix
     expose:
     - 25
-    environment:
-    - maildomain=autoq.localdev
-    - smtp_user=email:password

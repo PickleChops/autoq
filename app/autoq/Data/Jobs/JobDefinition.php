@@ -146,7 +146,6 @@ class JobDefinition implements Arrayable
         $this->updated = $updated;
     }
 
-
     /**
      * @return mixed
      */

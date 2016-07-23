@@ -52,33 +52,42 @@ class QueueControl
     }
 
     /**
+     * Coordinate locking to get a NEW queue item to fetch
      * @return array
      */
     public function grabNextNewToFetch()
     {
 
+        //Start transaction
         $this->dbConnection->begin();
 
+        //Select and lock next NEW queue item
         $next = $this->dbConnection->fetchOne("select id, job_def->'$.id' as job_id, json_unquote(job_def->'$.name') as job_name 
                 from job_queue
     			where
                     flow_control->'$.status' = 'NEW'
                 order by flow_control->'$.status_time' limit 1 for update");
 
+        //If item is found
         if ($next !== false && $next['id']) {
 
-            //Add the key to id the staged resultset
+            //Add the key to id the staged result set (used to cache result set)
             $dataStageKey = $this->makeDataStageKey($next['id'], $next['job_id'], $next['job_name']);
 
             $time = time();
 
-            $update = $this->dbConnection->execute("update job_queue
-                                            set flow_control = json_set(flow_control, '$.status','FETCHING','$.status_time', {$time}, '$.status_history.FETCHING',{$time}), 
-                                            data_stage_key = '{$dataStageKey}'
-                                            where id = {$next['id']}");
+            //Move the queue item on to FETCHING status
+            $update = $this->
+                        dbConnection->
+                            execute("update job_queue
+                                     set flow_control = json_set(flow_control, '$.status','FETCHING','$.status_time', {$time}, '$.status_history.FETCHING',{$time}), 
+                                     data_stage_key = '{$dataStageKey}'
+                                     where id = {$next['id']}");
 
+            //Commit the transaction
             $this->dbConnection->commit();
 
+            //Log what happened
             if ($update) {
                 $this->log->info("Queue ID {$next['id']} reserved for fetching");
             } else {
@@ -89,6 +98,7 @@ class QueueControl
             $next = $this->queueRepo->getById($next['id']);
 
         } else {
+            //End commit on no NEW items found
             $this->dbConnection->commit();
         }
 
@@ -149,7 +159,7 @@ class QueueControl
                 from job_queue 
                 where job_def->'$.id' = {$jobDefinition->getId()}
                     AND NOT (flow_control->'$.status' = 'ERROR'
-                     OR flow_control->'$.status' = 'ABORTED' OR flow_control->'$.status' = 'COMPLETED') 
+                     OR flow_control->'$.status' = 'ABORTED') 
                 order by id DESC limit 1;");
 
         return $last;

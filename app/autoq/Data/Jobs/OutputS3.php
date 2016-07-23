@@ -6,11 +6,13 @@ namespace Autoq\Data\Jobs;
 class OutputS3 extends Output
 {
     private $bucket;
-    
+    private $key;
+
     public function __construct($data)
     {
         $this->setType(JobDefinition::OUTPUT_S3);
         $this->setBucket($data['bucket']);
+        $this->setKey(array_get('key', $data, ""));
     }
 
     /**
@@ -30,6 +32,23 @@ class OutputS3 extends Output
     }
 
     /**
+     * @return mixed
+     */
+    public function getKey()
+    {
+        return $this->key;
+    }
+
+    /**
+     * @param mixed $key
+     */
+    public function setKey($key)
+    {
+        $this->key = $key;
+    }
+
+
+    /**
      * Convert to an array
      * @return array
      */
@@ -38,6 +57,7 @@ class OutputS3 extends Output
         return [
                 'type' => $this->getType(),
                 'bucket' => $this->getBucket(),
+                'key' => $this->getKey(),
         ];
     }
     

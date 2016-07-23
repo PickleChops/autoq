@@ -273,6 +273,50 @@ class Schedule
     {
         $this->asap = $asap;
     }
+/*
+    public function getNextEvent($now = null) {
 
+        //Get now if not provided
+        $now !== null ?: time();
+
+        switch ($this->frequency) {
+
+            case self::ASAP:
+                $eventTime = $now;
+                break;
+
+            case self::FIXED_TIME:
+
+                $date = $this->date !== false ? $this->date : 
+
+                if ($this->date !== false || $this->time !== false) {
+                    $valid = true;
+                }
+                break;
+
+            case self::HOURLY:
+
+                $valid = true;
+                break;
+
+            case self::DAILY:
+
+                if ($this->time !== false) {
+                    $valid = true;
+                }
+                break;
+
+
+            case self::WEEKLY:
+
+                $valid = true;
+                break;
+
+        }
+
+
+
+    }
+*/
 
 }

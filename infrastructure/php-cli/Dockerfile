@@ -1,12 +1,13 @@
 FROM php:5.6-cli
 
 #Install unzip and libpq (used by Postgres)
-RUN apt-get update && apt-get install -y zip unzip libpq-dev \
+RUN apt-get update && apt-get install -y zip unzip libpq-dev libmcrypt-dev telnet nano \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install modules
 RUN docker-php-ext-install mbstring \
     && docker-php-ext-install bcmath \
+    && docker-php-ext-install mcrypt \
     && docker-php-ext-install pdo_mysql \
     && docker-php-ext-install pdo_pgsql \
     && pecl install xdebug

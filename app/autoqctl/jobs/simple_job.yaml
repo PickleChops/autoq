@@ -1,9 +1,10 @@
-name: This job came from autoqctl!
+name: Simple email ouput
 connection: default
 schedule: ASAP
 query: |
   SELECT * FROM test_table
 outputs:
   - type: email
-    address: root@localhost
+    address: boydi@boydi.com
+    style: html
 

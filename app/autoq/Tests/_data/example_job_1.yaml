@@ -1,17 +1,39 @@
-name: This is sample job 1
+# Name a required field. Each job requires a name, this is an arbitrary string to help idenify the purpose of the job
+name: This is sample job
+
+# Connection a required field. Currently this value must be default
 connection: default
-schedule: every day at 4pm
+
+# Schedule an optional field. If omitted the default is ASAP, meaning the job will run immediately
+# Simple natural language is permitted. e.g. Now. Every Tuesday at 10am. 4 minutes past every hour
+schedule: Every Tuesday at 10am
+
+# Query is a required field. The SQL to execute for this job
 query: |
-    Select * from massive_table
+    Select id, count(*) as count from massive_table
     where some_condition is true
-    group by 1
+    group by 1 limit 50
+
+# Outputs at least one is required.
+# Outputs detail where you wish to have job results sets (if any) sent to.
+# Multiple outputs are permitted
 outputs:
+  # Type required. Valid values are S3 and email
   - type: s3
+    # Bucket: Required for S3 type. The target bucket
+    # key: The path/name of the output in the s3 bucket. Existing files will be overridden. Default is system generated key
     bucket: an_s3_bucket
-    format: csv
+    key: finance/monthly_sales_to_date.csv
+  # An email output
   - type: email
-    address: boydi@boydi.com
+    # Address required for email type. The target email address
+    address: user@example.com
+    # Style optional field. The default value is attachment.
+    # Valid values are
+    #   attachment for receiving the result set as an email attachment
+    #   html for receiving the result set as an HTML email. Results are limited to 50 rows
     style: html
+  # Another email output with result set as an attachment
   - type: email
-    address: sid@boydi.com
-    style: html
+    address: anotheruser@example.com
+    style: attachment

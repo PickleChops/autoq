@@ -6,6 +6,7 @@ use Autoq\Data\Jobs\JobDefinition;
 use Autoq\Data\Jobs\JobsRepository;
 use Autoq\Data\Queue\QueueControl;
 use Autoq\Lib\ScheduleParser\Schedule;
+use Autoq\Lib\Time\Time;
 use Phalcon\Config;
 use Phalcon\Di;
 use Phalcon\Logger;
@@ -19,8 +20,8 @@ class Scheduler implements CliTask
     protected $jobsRepo;
     protected $queueControl;
 
-    protected $args;
 
+    
     protected $timeHorizon;
 
     /**
@@ -49,21 +50,51 @@ class Scheduler implements CliTask
         //Poll database looking for new jobs to schedule
         while (true) {
 
-            //Get the currently defined jobs
-            $this->log->debug("Looking for job definitions...");
-
-            /**
+            $time = new Time(time());
+            
+           /**
              * @var $jobs JobDefinition[]
              */
             $jobs = $this->jobsRepo->getAll();
 
-            $this->log->debug(count($jobs) . " job definitions found");
+
+            $this->log->info("Checking the schedule for " . count($jobs) . " job definitions");
 
             // Loop through the jobs looking for jobs that are ready to schedule
 
             foreach ($jobs as $job) {
+
+                $schedule = $job->getSchedule();
+
+                $jobStartTime = $schedule->getNextEventTs($time); 
                 
-    //            $window = $this->getScheduleWindow($job->getSchedule());
+                if($jobStartTime > $time->getTimestamp()) {
+
+                    //The job is not ready to run
+
+                } else {
+
+                    //Ok so the job is runnable based on time
+                    //But we must check frequency criteria is met
+
+
+                    //Get fequency window for this schedule
+                    $window = $this->getScheduleWindow($schedule);
+
+                    //Is there a frequency window for this schedule. e.g. Fixed-time, ASAP do not have a frequency
+                    if($window != null) {
+
+                    } else {
+
+                        //This schedule has no frequency window all criteria for scheduling
+                        //are met, let's add to queue
+
+                        $queueID = $this->queueControl->addNew($job);
+                    }
+
+                }
+
+
 
                 if (($last = $this->queueControl->getLastCompletedOrActiveWithInWindow($job)) === false) {
 
@@ -84,6 +115,8 @@ class Scheduler implements CliTask
 
     }
 
+
+  
     /**
      * isJobReadyToSchedule
      * @param JobDefinition $job
@@ -126,6 +159,8 @@ class Scheduler implements CliTask
 
     }
 
+
+
     /**
      * @param Schedule $schedule
      * @param $now
@@ -135,21 +170,11 @@ class Scheduler implements CliTask
     private function isReadyFixedTime(Schedule $schedule, $now)
     {
 
-        if ($schedule->getDate() && $schedule->getTime()) {
-            $this->log->error("No date or time provided for a 'No Frequency' schedule ");
-            return false;
-        }
-
-        $date = $schedule->getDate() !== false ? $schedule->getDate() : date('d-M-y', $now);
-        $time = $schedule->getTime() !== false ? $schedule->getTime() : '00:00';
-
-        $runTime = strtotime("$date $time");
-
-        $readyToSchedule = $now + $this->getTimeHorizon() >= $runTime;
+          $readyToSchedule = $now + $this->getTimeHorizon() >= $runTime;
 
         return $readyToSchedule;
     }
-
+    
     /**
      * @return mixed
      */

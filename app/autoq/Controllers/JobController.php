@@ -34,18 +34,18 @@ class JobController extends BaseController
         if ($this->request->isPost()) {
 
             /**
-             * @var $jobValidator \Autoq\Services\JobProcessor\JobDefinitionProcessor
+             * @var $jobProcessor \Autoq\Services\JobProcessor\JobDefinitionProcessor
              */
-            $jobValidator = $this->di->get('jobProcessor');
+            $jobProcessor = $this->di->get('jobProcessor');
 
             $rawDefinition = $this->request->getRawBody();
 
             // Run some basic checks on the definition and format as we want
-            if ($jobValidator->processJobDefiniton($rawDefinition)) {
+            if ($jobProcessor->processJobDefiniton($rawDefinition)) {
 
                 //Get the processed job definition
-                $processedDefinition = $jobValidator->getValidatedDefinition();
-
+                $processedDefinition = $jobProcessor->getValidatedDefinition();
+                
                 // Save the validated job definition
                 if (($jobID = $this->repo->save($processedDefinition)) === false) {
                     $response = $this->apiHelper->responseError("Unable to add job");
@@ -61,7 +61,7 @@ class JobController extends BaseController
 
             } else {
                 //Send back validation error
-                $response = $this->apiHelper->responseError($jobValidator->getFirstError());
+                $response = $this->apiHelper->responseError($jobProcessor->getFirstError());
             }
 
         } else {

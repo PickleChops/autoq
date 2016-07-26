@@ -42,7 +42,7 @@ class SchedulerTest extends Autoq_TestCase
          * @var $queueControl QueueControl
          */
         $queueControl = $this->getMockBuilder(QueueControl::class)
-            ->setConstructorArgs([self::$config, $log, $queueRepo])
+            ->setConstructorArgs([self::$config, $log, $queueRepo, $jobRepo])
             ->getMock();
 
 

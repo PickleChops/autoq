@@ -4,6 +4,7 @@ namespace Autoq\Data\Queue;
 
 use Autoq\Data\DataTraits;
 use Autoq\Data\Jobs\JobDefinition;
+use Autoq\Data\Jobs\JobsRepository;
 use Phalcon\Config;
 use Phalcon\Db;
 use Phalcon\Logger\Adapter\Stream;
@@ -17,26 +18,30 @@ class QueueControl
     protected $log;
     protected $queueRepo;
     protected $dbConnection;
+    private $jobRepo;
 
     /**
      * JobControl constructor.
      * @param Config $config
      * @param Stream $log
      * @param QueueRepository $queueRepo
+     * @param JobsRepository $jobRepo
      */
-    public function __construct(Config $config, Stream $log, QueueRepository $queueRepo)
+    public function __construct(Config $config, Stream $log, QueueRepository $queueRepo, JobsRepository $jobRepo)
     {
         $this->config = $config;
         $this->log = $log;
         $this->queueRepo = $queueRepo;
 
         $this->dbConnection = $queueRepo->getDBConnection();
+        $this->jobRepo = $jobRepo;
     }
 
     /**
      * Add new item to Queue
      * @param JobDefinition $jobDefinition
      * @return bool
+     * @throws \Exception
      */
     public function addNew(JobDefinition $jobDefinition)
     {
@@ -48,7 +53,21 @@ class QueueControl
         $data['job_def'] = $jobDefinitionData;
         $data['flow_control'] = (new FlowControl())->setStatus(FlowControl::STATUS_NEW)->toArray();
 
-        return $this->queueRepo->save($data);
+
+        //Add the new queue item and update the job with the run instance id as single transaction
+
+        try {
+            $this->dbConnection->begin();
+            $queueID = $this->queueRepo->save($data);
+            $this->jobRepo->update($jobDefinition->getId(), ['last_instance_id' => $queueID]);
+            $this->dbConnection->commit();
+        } catch (\Exception $e) {
+            //Rollback and throw exception higher
+            $this->dbConnection->rollback();
+            throw $e;
+        }
+
+        return $queueID;
     }
 
     /**
@@ -78,8 +97,8 @@ class QueueControl
 
             //Move the queue item on to FETCHING status
             $update = $this->
-                        dbConnection->
-                            execute("update job_queue
+            dbConnection->
+            execute("update job_queue
                                      set flow_control = json_set(flow_control, '$.status','FETCHING','$.status_time', {$time}, '$.status_history.FETCHING',{$time}), 
                                      data_stage_key = '{$dataStageKey}'
                                      where id = {$next['id']}");
@@ -122,7 +141,7 @@ class QueueControl
 
 
         if ($next !== false && $next['id']) {
-            
+
             $time = time();
 
             $update = $this->dbConnection->execute("update job_queue
@@ -147,6 +166,7 @@ class QueueControl
         return $next;
 
     }
+
 
     /**
      * @param JobDefinition $jobDefinition

@@ -2,7 +2,12 @@
 
 namespace Autoq\Lib\ScheduleParser;
 
+use Autoq\Lib\Time\Time;
 
+/**
+ * Class Schedule
+ * @package Autoq\Lib\ScheduleParser
+ */
 class Schedule
 {
 
@@ -218,7 +223,6 @@ class Schedule
      */
     public function isValid()
     {
-        // @todo implement properly
 
         $valid = false;
 
@@ -249,7 +253,7 @@ class Schedule
 
 
             case self::WEEKLY:
-
+                // @todo
                 $valid = true;
                 break;
 
@@ -273,50 +277,86 @@ class Schedule
     {
         $this->asap = $asap;
     }
-/*
-    public function getNextEvent($now = null) {
 
-        //Get now if not provided
-        $now !== null ?: time();
+    /**
+     * Return timestamp for next event for this schedule
+     * @param Time $time
+     * @return bool|int|null
+     */
+    public function getNextEventTs(Time $time)
+    {
+        $nextEventTimeStamp = false;
 
         switch ($this->frequency) {
 
             case self::ASAP:
-                $eventTime = $now;
+
+                $nextEventTimeStamp = $time->getTimestamp();
+
                 break;
 
             case self::FIXED_TIME:
 
-                $date = $this->date !== false ? $this->date : 
+                $date = $this->getDate() !== false ? $this->getDate() : $time->getCurrentDate();
+                $time = $this->getTime() !== false ? $this->getTime() : '00:00';
+                $nextEventTimeStamp = strtotime("$date $time");
 
-                if ($this->date !== false || $this->time !== false) {
-                    $valid = true;
-                }
                 break;
 
             case self::HOURLY:
 
-                $valid = true;
+                $dateTime = (new \DateTime())->setTimestamp($time->getTimestamp());
+
+                $minutes = $this->getMinute() !== false ? $this->getMinute() : 0;
+                $hour = intval($time->getCurrentHour());
+
+                $dateTime->setTime($hour, $minutes);
+
+                if ($minutes < intval($time->getCurrentMinute())) {
+                    $dateTime->add(new \DateInterval("PT1H"));
+                }
+
+                $nextEventTimeStamp = $dateTime->getTimestamp();
+
                 break;
 
             case self::DAILY:
 
-                if ($this->time !== false) {
-                    $valid = true;
+                $actualDateTime = (new \DateTime())->setTimestamp($time->getTimestamp());
+
+                $scheduleTime = $this->getTime() !== false ? $this->getTime() : '00:00';
+
+                $timeParts = explode(':', $scheduleTime);
+
+                $hour = $timeParts[0];
+                $minutes = intval($timeParts[1]);
+
+                $scheduleDateTime = (new \DateTime())->setDate(
+                    $time->getCurrentYear(),
+                    $time->getCurrentMonth(),
+                    $time->getCurrentMonthDay()
+                )->setTime(
+                    $hour,
+                    $minutes
+                );
+
+                if ($scheduleDateTime < $actualDateTime) {
+                    $scheduleDateTime->add(new \DateInterval("P1D"));
                 }
+
+                $nextEventTimeStamp = $scheduleDateTime->getTimestamp();
+
                 break;
 
 
             case self::WEEKLY:
 
-                $valid = true;
                 break;
 
         }
 
-
+        return $nextEventTimeStamp;
 
     }
-*/
 
 }

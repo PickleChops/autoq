@@ -7,7 +7,8 @@ use Autoq\Lib\ScheduleParser\Schedule;
 use Autoq\Lib\ScheduleParser\ScheduleParser;
 
 /**
- * Class JobDefinition
+ * Class JobDefinition Internal representation of a job definition
+ * @package Autoq\Data\Jobs
  */
 class JobDefinition implements Arrayable
 {
@@ -17,6 +18,8 @@ class JobDefinition implements Arrayable
     private $schedule;
     private $connection;
     private $query;
+
+    private $lastInstanceID;
 
     private $created;
     private $updated;
@@ -33,6 +36,7 @@ class JobDefinition implements Arrayable
         $this->setId($data['id']);
         $this->setName($data['name']);
         $this->setConnection($data['connection']);
+        $this->setLastInstanceID($data['last_instance_id']);
         $this->setQuery($data['query']);
         $this->setCreated($data['created']);
         $this->setUpdated($data['updated']);
@@ -266,5 +270,23 @@ class JobDefinition implements Arrayable
     {
         return count($this->outputs);
     }
+
+    /**
+     * @return null
+     */
+    public function getLastInstanceID()
+    {
+        return $this->lastInstanceID;
+    }
+
+    /**
+     * @param null $lastInstanceID
+     */
+    public function setLastInstanceID($lastInstanceID)
+    {
+        $this->lastInstanceID = $lastInstanceID;
+    }
+
+
 
 }

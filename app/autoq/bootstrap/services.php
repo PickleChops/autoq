@@ -116,6 +116,7 @@ $di->set('queueControl', [
             ['type' => 'service', 'name' => 'config'],
             ['type' => 'service', 'name' => 'log'],
             ['type' => 'service', 'name' => 'queueRepo'],
+            ['type' => 'service', 'name' => 'jobRepo'],
         ]
     ]
 );

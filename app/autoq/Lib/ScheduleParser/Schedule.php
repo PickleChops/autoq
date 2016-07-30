@@ -305,18 +305,18 @@ class Schedule
 
             case self::HOURLY:
 
-                $dateTime = (new \DateTime())->setTimestamp($time->getTimestamp());
+                $actualDateTime = (new \DateTime())->setTimestamp($time->getTimestamp());
 
                 $minutes = $this->getMinute() !== false ? $this->getMinute() : 0;
                 $hour = intval($time->getCurrentHour());
 
-                $dateTime->setTime($hour, $minutes);
+                $actualDateTime->setTime($hour, $minutes);
 
                 if ($minutes < intval($time->getCurrentMinute())) {
-                    $dateTime->add(new \DateInterval("PT1H"));
+                    $actualDateTime->add(new \DateInterval("PT1H"));
                 }
 
-                $nextEventTimeStamp = $dateTime->getTimestamp();
+                $nextEventTimeStamp = $actualDateTime->getTimestamp();
 
                 break;
 
@@ -350,6 +350,24 @@ class Schedule
 
 
             case self::WEEKLY:
+
+                $actualDateTime = (new \DateTime())->setTimestamp($time->getTimestamp());
+
+                $scheduleTsFromDay = strtotime("next {$this->getDay()}", $time->getTimestamp());
+
+                $timeParts = explode(':', $this->getTime());
+
+                $hour = $timeParts[0];
+                $minutes = intval($timeParts[1]);
+
+                $scheduleDateTime = (new \DateTime())->setTimestamp($scheduleTsFromDay);
+                $scheduleDateTime->setTime($hour, $minutes);
+
+                if ($scheduleDateTime < $actualDateTime) {
+                    $scheduleDateTime->add(new \DateInterval("P1W"));
+                }
+
+                $nextEventTimeStamp = $scheduleDateTime->getTimestamp();
 
                 break;
 

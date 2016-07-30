@@ -171,5 +171,51 @@ class ScheduleTest extends \PHPUnit_Framework_TestCase
 
     }
 
+    /**
+     * @dataProvider testNextWeeklyEventProvider
+     * @param $pretendTime
+     * @param $weekday
+     * @param $timeInDay
+     * @param $expectedTime
+     */
+    public function testNextWeeklyEvent($pretendTime, $weekday, $timeInDay, $expectedTime)
+    {
+
+        $expectedTS = strtotime($expectedTime);
+
+        $pretendActualTime = strtotime($pretendTime);
+
+        $schedule = new Schedule();
+
+        $schedule
+            ->setFrequency(Schedule::WEEKLY)
+            ->setDay($weekday)
+            ->setTime($timeInDay);
+
+        $time = new Time($pretendActualTime);
+
+        $startTime = $schedule->getNextEventTs($time);
+
+        // Assertions
+        $this->assertEquals($expectedTS, $startTime);
+
+    }
+
+
+    /**
+     * Provider for testNextWeeklyEvent
+     * @return array
+     */
+    public function testNextWeeklyEventProvider() {
+
+        return [
+
+            ['2016-06-01 15:00', 'Tuesday', '15:00', '2016-06-07 15:00'],
+            ['2016-06-01 15:00', 'Friday', '09:00', '2016-06-03 09:00'],
+            ['2016-12-25 23:59', 'Sunday', '10:00', '2017-01-01 10:00'],
+
+        ];
+
+    }
 
 }

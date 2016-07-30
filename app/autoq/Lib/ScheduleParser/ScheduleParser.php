@@ -89,6 +89,11 @@ class ScheduleParser
             $this->schedule->reset()->setAsap($asap);
             $this->schedule->setFrequency(Schedule::ASAP);
         }
+
+        //If weeekly but no time given assume midnight
+        if($this->schedule->getFrequency() == Schedule::WEEKLY && $this->schedule->getTime() === false) {
+            $this->schedule->setTime('00:00');
+        }
     }
 
     /**

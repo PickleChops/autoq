@@ -39,11 +39,11 @@ class FlowControl implements Arrayable
      */
     public function __construct($data = [])
     {
-        if(array_key_exists('status',$data) && array_key_exists('statusTime', $data) && array_key_exists('statusHistory', $data)) {
+        if(array_key_exists('status',$data) && array_key_exists('status_time', $data) && array_key_exists('status_history', $data)) {
             
             $this->setStatus($data['status']);
-            $this->setStatusTime($data['statusTime']);
-            $this->setStatusHistory($data['statusHistory']);
+            $this->setStatusTime($data['status_time']);
+            $this->setStatusHistory($data['status_history']);
             $this->setErrorMessage(null);
             
         }

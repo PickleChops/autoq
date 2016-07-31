@@ -162,7 +162,7 @@ class Sender implements CliTask
             ->setFrom(array('noreply@mail.boydstratton.com' => 'Autoq Sender'))
             ->setSender('noreply@mail.boydstratton.com')
             ->setTo($output->getEmail(), $output->getEmail())
-            ->setBody("Here are the results from job ID: {$jobDefinition->getId()} - {$jobDefinition->getName()}\n\nAutoq\n\n");
+            ->setBody($this->buildPlainTextBody($jobDefinition));
 
 
         $filepath = $this->resultsPathInfo['dirname'] . "/" . $this->resultsPathInfo['basename'];
@@ -173,8 +173,17 @@ class Sender implements CliTask
                 $message->attach($attachment);
                 break;
             case OutputEmail::STYLE_HTML:
-                $data = $this->readRowsFromStagingFile(self::MAX_HTML_ROWS, $rowRemain);
-                $markup = $this->buildHTML($data, $rowRemain);
+                $resultData = $this->readRowsFromStagingFile(self::MAX_HTML_ROWS, $rowsRemain);
+                
+                $otherData = [
+                    
+                    'rowsRemain' => $rowsRemain,
+                    'schedule' => $jobDefinition->getScheduleOriginal()
+                    
+                ];
+                
+                $markup = $this->buildHTML($resultData, $otherData);
+                
                 $message->addPart($markup, 'text/html');
                 break;
             default:
@@ -197,11 +206,26 @@ class Sender implements CliTask
     }
 
     /**
-     * @param $data
-     * @param $rowsRemain
+     * @param JobDefinition $jobDefinition
      * @return string
      */
-    private function buildHTML($data, $rowsRemain) {
+    private function buildPlainTextBody(JobDefinition $jobDefinition) {
+        
+        $body = "Here are the results from job ID: {$jobDefinition->getId()} - {$jobDefinition->getName()}\n\n";
+        
+        $body .= "Schedule: {$jobDefinition->getScheduleOriginal()}\n\n";
+        
+        $body .= "Autoq\n\n";
+        
+        return $body;
+    }
+
+    /**
+     * @param $data
+     * @param $otherData
+     * @return string
+     */
+    private function buildHTML($data, $otherData) {
 
         $headerRow = [];
         $dataRows = [];
@@ -211,16 +235,15 @@ class Sender implements CliTask
             $noResultSet = false;
             $headerRow = array_shift($data);
             $dataRows = $data;
-        } 
+        }
         
-        $html =  $this->view->render("email/senderHtml", [
-            
-            'noResultSet' => $noResultSet,
-            'headerRow' => $headerRow,
-            'dataRows' => $dataRows,
-            'rowsRemain' => $rowsRemain,
-            
-        ]);
+        $templateData = $otherData;
+
+        $templateData['noResultSet'] = $noResultSet;
+        $templateData['headerRow'] = $headerRow;
+        $templateData['dataRows'] = $dataRows;
+        
+        $html =  $this->view->render("email/senderHtml", $templateData);
 
        return $html;
 

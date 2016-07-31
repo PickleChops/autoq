@@ -1,9 +1,0 @@
-name: This job came from autoqctl!
-connection: default
-schedule: ASAP
-query: |
-  SELECT * FROM test_table
-outputs:
-  - type: email
-    address: root@localhost
-

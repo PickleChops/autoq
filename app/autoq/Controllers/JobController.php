@@ -3,6 +3,7 @@
 namespace Autoq\Controllers;
 
 use Autoq\Data\Jobs\JobsRepository;
+use Autoq\Lib\ScheduleParser\ScheduleParser;
 
 /**
  * Class JobController Endpoints for /job/ api calls

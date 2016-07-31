@@ -103,7 +103,7 @@ class ScheduleParser
         }
 
         //If NONE found ignore others
-        if ($this->schedule->getFrequency() == Schedule::NONE) {
+        if ($this->schedule->getFrequency() === Schedule::NONE) {
             $this->schedule->reset()->setFrequency(Schedule::NONE);
         }
 

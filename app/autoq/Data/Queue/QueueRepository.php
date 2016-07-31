@@ -179,7 +179,7 @@ class QueueRepository extends BaseRepository
             return false;
         } else {
 
-            $queueItemData['id'] = $row['id'];
+            $queueItemData['id'] = (int)$row['id'];
             $queueItemData['created'] = $row['created'];
             $queueItemData['updated'] = $row['updated'];
             $queueItemData['data_stage_key'] = $row['data_stage_key'];

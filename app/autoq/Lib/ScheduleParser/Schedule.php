@@ -238,6 +238,10 @@ class Schedule
 
         $valid = false;
 
+        if($this->frequency === false) {
+            return false;
+        }
+
         switch ($this->frequency) {
 
             case self::NONE:
@@ -326,16 +330,22 @@ class Schedule
 
                 $actualDateTime = (new \DateTime())->setTimestamp($time->getTimestamp());
 
-                $minutes = $this->getMinute() !== false ? $this->getMinute() : 0;
-                $hour = intval($time->getCurrentHour());
+                $minutes = $this->getMinute() !== false ? intval($this->getMinute()) : 0;
 
-                $actualDateTime->setTime($hour, $minutes);
+                $scheduleDateTime = (new \DateTime())->setDate(
+                    $time->getCurrentYear(),
+                    $time->getCurrentMonth(),
+                    $time->getCurrentMonthDay()
+                )->setTime(
+                    intval($time->getCurrentHour()),
+                    $minutes
+                );
 
-                if ($minutes < intval($time->getCurrentMinute())) {
-                    $actualDateTime->add(new \DateInterval("PT1H"));
+                if ($scheduleDateTime < $actualDateTime) {
+                    $scheduleDateTime->add(new \DateInterval("PT1H"));
                 }
 
-                $nextEventTimeStamp = $actualDateTime->getTimestamp();
+                $nextEventTimeStamp = $scheduleDateTime->getTimestamp();
 
                 break;
 

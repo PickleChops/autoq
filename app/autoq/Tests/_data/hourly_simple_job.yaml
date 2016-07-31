@@ -1,0 +1,10 @@
+name: This simple test job is on an hourly schedule
+connection: default
+schedule: Every hour at 4 minutes past
+query: |
+  SELECT * FROM test_table
+outputs:
+  - type: email
+    address: boydi@boydi.com
+    style: html
+

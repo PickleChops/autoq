@@ -1,0 +1,8 @@
+name: This simple test job is on a daily schedule
+connection: default
+schedule: Every day at 9am
+query: |
+  SELECT * FROM test_table
+outputs:
+  - type: email
+    address: boydi@boydi.com

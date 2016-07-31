@@ -20,8 +20,6 @@ class Scheduler implements CliTask
     protected $jobsRepo;
     protected $queueControl;
 
-
-    
     protected $timeHorizon;
 
     /**
@@ -51,8 +49,8 @@ class Scheduler implements CliTask
         while (true) {
 
             $time = new Time(time());
-            
-           /**
+
+            /**
              * @var $jobs JobDefinition[]
              */
             $jobs = $this->jobsRepo->getAll();
@@ -66,119 +64,50 @@ class Scheduler implements CliTask
 
                 $schedule = $job->getSchedule();
 
-                $jobStartTime = $schedule->getNextEventTs($time); 
-                
-                if($jobStartTime > $time->getTimestamp()) {
+                //Ignore scehdules that are unable to provide a next event. e.g. Schedule::NONE
+                if (($nextEventTs = $schedule->getNextEventTs($time)) !== false) {
 
-                    //The job is not ready to run
+                    $nextEventFriendly = date('Y-m-d H:i:s', $nextEventTs);
+                    $currentTimeFriendly = date('Y-m-d H:i:s', $time->getTimestamp()); 
+                        
 
-                } else {
+                    if ($nextEventTs > $time->getTimestamp()) {
 
-                    //Ok so the job is runnable based on time
-                    //But we must check frequency criteria is met
-
-
-                    //Get fequency window for this schedule
-                    $window = $this->getScheduleWindow($schedule);
-
-                    //Is there a frequency window for this schedule. e.g. Fixed-time, ASAP do not have a frequency
-                    if($window != null) {
+                        //The job is not ready to run
+                        $this->logForJob($job, "Not scheduled: " . $nextEventFriendly . ' is later than now: ' . $currentTimeFriendly);
 
                     } else {
 
-                        //This schedule has no frequency window all criteria for scheduling
-                        //are met, let's add to queue
-
-                        $queueID = $this->queueControl->addNew($job);
-                    }
-
-                }
-
-
-
-                if (($last = $this->queueControl->getLastCompletedOrActiveWithInWindow($job)) === false) {
-
-                    if ($this->isJobReadyToSchedule($job)) {
+                        //Ok so job meets criteria of being ready
 
                         $queueID = $this->queueControl->addNew($job);
 
-                        $this->logForJob($job, "Added to queue with queue ID: $queueID");
+                        $this->logForJob($job, "Scheduled: " . $nextEventFriendly . ' is less than or equal to now: ' . $currentTimeFriendly);
+                        $this->logForJob($job, "Added to work queue with ID: $queueID");
+
+                        //To avoid loops with ASAP events the schedule is returned to NONE once initial scheduling has occurred
+                        if ($schedule->getFrequency() == Schedule::ASAP) {
+                            $schedule->setFrequency(Schedule::NONE);
+                            $job->setScheduleOriginal($schedule->getReadableFrequency());
+                            $this->jobsRepo->update($job->getId(), $job->convertToOrginalDefinition());
+                        }
 
                     }
                 } else {
-                    $this->logForJob($job, "This job is already scheduled in the queue (queue ID: {$last['id']})",Logger::DEBUG);
+                    $this->logForJob($job, "No next event time provided for schedule: " . $schedule->getReadableFrequency());
                 }
             }
 
-            sleep($this->config->app->scheduler_sleep);
+            sleep($this->config['app']['scheduler_sleep']);
         }
-
     }
 
 
-  
-    /**
-     * isJobReadyToSchedule
-     * @param JobDefinition $job
-     * @return bool
-     */
-    public function isJobReadyToSchedule(JobDefinition $job)
-    {
-        $ready = false;
-        $now = time();
-        $schedule = $job->getSchedule();
-
-        switch ($schedule->getFrequency()) {
-
-            case Schedule::ASAP:
-                
-                
-                
-                $ready = true;
-                break;
-
-            case Schedule::FIXED_TIME:
-
-                $ready = $this->isReadyFixedTime($schedule, $now);
-                break;
-
-            case Schedule::HOURLY:
-                break;
-
-            case Schedule::WEEKLY:
-                break;
-
-            case Schedule::DAILY:
-                break;
-
-        }
-
-        $this->logForJob($job, "\"{$job->getScheduleOriginal()}\" - " . ($ready ? "will be added to queue..." : "not ready for scheduling"));
-
-        return $ready;
-
-    }
-
-
-
-    /**
-     * @param Schedule $schedule
-     * @param $now
-     * @return bool
-     * @throws \Exception
-     */
-    private function isReadyFixedTime(Schedule $schedule, $now)
-    {
-
-          $readyToSchedule = $now + $this->getTimeHorizon() >= $runTime;
-
-        return $readyToSchedule;
-    }
-    
     /**
      * @return mixed
      */
-    public function getTimeHorizon()
+    public
+    function getTimeHorizon()
     {
         return $this->timeHorizon;
     }
@@ -186,7 +115,8 @@ class Scheduler implements CliTask
     /**
      * @param mixed $timeHorizon
      */
-    public function setTimeHorizon($timeHorizon)
+    public
+    function setTimeHorizon($timeHorizon)
     {
         $this->timeHorizon = $timeHorizon;
     }
@@ -196,7 +126,8 @@ class Scheduler implements CliTask
      * @param $message
      * @param int $type
      */
-    private function logForJob(JobDefinition $job, $message, $type = Logger::INFO)
+    private
+    function logForJob(JobDefinition $job, $message, $type = Logger::INFO)
     {
 
         $message = "Job ID: {$job->getId()} - " . $message;

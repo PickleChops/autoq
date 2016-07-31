@@ -48,15 +48,15 @@ class ScheduleParserTest extends \PHPUnit_Framework_TestCase
 
     }
 
-    public function testSchedule4()
+    public function testSchedule5()
     {
-        $schedule = (new ScheduleParser('every week on a Monday at 1pm'))->parse();
+        $schedule = (new ScheduleParser('every week on a Friday'))->parse();
 
         // Assertions
         $this->assertEquals(true, $schedule instanceof Schedule);
         $this->assertEquals(Schedule::WEEKLY,$schedule->getFrequency());
-        $this->assertEquals('Monday',$schedule->getDay());
-        $this->assertEquals('13:00',$schedule->getTime());
+        $this->assertEquals('Friday',$schedule->getDay());
+        $this->assertEquals('00:00',$schedule->getTime());
 
     }
 

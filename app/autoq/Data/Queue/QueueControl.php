@@ -53,20 +53,8 @@ class QueueControl
         $data['job_def'] = $jobDefinitionData;
         $data['flow_control'] = (new FlowControl())->setStatus(FlowControl::STATUS_NEW)->toArray();
 
-
-        //Add the new queue item and update the job with the run instance id as single transaction
-
-        try {
-            $this->dbConnection->begin();
-            $queueID = $this->queueRepo->save($data);
-            $this->jobRepo->update($jobDefinition->getId(), ['last_instance_id' => $queueID]);
-            $this->dbConnection->commit();
-        } catch (\Exception $e) {
-            //Rollback and throw exception higher
-            $this->dbConnection->rollback();
-            throw $e;
-        }
-
+        $queueID = $this->queueRepo->save($data);
+  
         return $queueID;
     }
 

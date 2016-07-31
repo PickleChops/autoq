@@ -11,20 +11,20 @@ use Autoq\Lib\Time\Time;
 class Schedule
 {
 
+    const NONE = 0;
     const ASAP = 1;
     const FIXED_TIME = 2;
     const HOURLY = 3;
     const DAILY = 4;
     const WEEKLY = 5;
 
-
     static private $readableFrequency = [
+        self::NONE => 'NONE',
         self::ASAP => 'ASAP',
         self::FIXED_TIME => 'Fixed time',
         self::HOURLY => 'Hourly',
         self::DAILY => 'Daily',
         self::WEEKLY => 'Weekly'
-
     ];
 
     private $flexible;
@@ -219,6 +219,18 @@ class Schedule
 
 
     /**
+     * Is this schedule cyclical
+     */
+    public function isCyclical()
+    {
+
+        return ($this->getFrequency() == self::HOURLY ||
+            $this->getFrequency() == self::DAILY ||
+            $this->getFrequency() == self::WEEKLY);
+    }
+
+
+    /**
      * @return bool
      */
     public function isValid()
@@ -227,6 +239,10 @@ class Schedule
         $valid = false;
 
         switch ($this->frequency) {
+
+            case self::NONE:
+                $valid = true;
+                break;
 
             case self::ASAP:
                 $valid = true;
@@ -288,6 +304,9 @@ class Schedule
         $nextEventTimeStamp = false;
 
         switch ($this->frequency) {
+
+            case self::NONE:
+                break;
 
             case self::ASAP:
 

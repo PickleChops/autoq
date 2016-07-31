@@ -27,6 +27,8 @@ class ScheduleParser
 
             $tokenType = $token['type'];
 
+
+
             //Add frequency if found in input
             if ($tokenType == ScheduleLexer::TYPE_KEYWORD_FREQUENCY) {
                 $this->lookForFrequency();
@@ -42,7 +44,7 @@ class ScheduleParser
                 $this->schedule->setTime($token['normalised']);
             }
 
-            //If a time is specified add to schedule
+            //If a day is specified add to schedule
             if ($tokenType == ScheduleLexer::TYPE_KEYWORD_DAY) {
                 $this->schedule->setDay($token['normalised']);
             }
@@ -52,10 +54,15 @@ class ScheduleParser
                 $this->lookForMinutes($token['normalised']);
             }
 
-            //if an integer is found check for minutes
+            //if ASAP is found check for minutes
             if ($tokenType == ScheduleLexer::TYPE_KEYWORD_ASAP) {
                 $this->schedule->setFrequency(Schedule::ASAP);
                 $this->schedule->setAsap(true);
+            }
+
+            //if ASAP is found check for minutes
+            if ($tokenType == ScheduleLexer::TYPE_KEYWORD_NONE) {
+                $this->schedule->setFrequency(Schedule::NONE);
             }
 
         }
@@ -94,6 +101,12 @@ class ScheduleParser
         if($this->schedule->getFrequency() == Schedule::WEEKLY && $this->schedule->getTime() === false) {
             $this->schedule->setTime('00:00');
         }
+
+        //If NONE found ignore others
+        if ($this->schedule->getFrequency() == Schedule::NONE) {
+            $this->schedule->reset()->setFrequency(Schedule::NONE);
+        }
+
     }
 
     /**

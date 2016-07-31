@@ -17,8 +17,13 @@ class ScheduleLexer implements \Iterator
     const TYPE_KEYWORD_DAY = 'day';
     const TYPE_KEYWORD_MONTH = 'month';
     const TYPE_KEYWORD_ASAP = 'asap';
+    const TYPE_KEYWORD_NONE = 'none';
 
     private $keywords = [
+
+        self::TYPE_KEYWORD_NONE => [
+            'None'
+        ],
         
         self::TYPE_KEYWORD_ASAP => [
             'Now', 'Asap'

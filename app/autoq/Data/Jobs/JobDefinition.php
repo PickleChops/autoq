@@ -19,8 +19,6 @@ class JobDefinition implements Arrayable
     private $connection;
     private $query;
 
-    private $lastInstanceID;
-
     private $created;
     private $updated;
 
@@ -36,11 +34,10 @@ class JobDefinition implements Arrayable
         $this->setId($data['id']);
         $this->setName($data['name']);
         $this->setConnection($data['connection']);
-        $this->setLastInstanceID($data['last_instance_id']);
         $this->setQuery($data['query']);
         $this->setCreated($data['created']);
         $this->setUpdated($data['updated']);
-  
+
         $this->setScheduleOriginal($data['schedule']);
 
         $scheduleParser = new ScheduleParser($data['schedule']);
@@ -49,7 +46,7 @@ class JobDefinition implements Arrayable
         } else {
             throw new \Exception("Unable to parse schedule in " . __CLASS__);
         }
-        
+
         if (count($data['outputs'])) {
 
             foreach ($data['outputs'] as $outputData) {
@@ -104,18 +101,15 @@ class JobDefinition implements Arrayable
      * @return string
      * @throws \Exception
      */
-    public function convertToDbJson() {
+    public function convertToOrginalDefinition()
+    {
         $data = $this->toArray();
 
         unset($data['id']);
         unset($data['created']);
         unset($data['updated']);
 
-        if(($json = json_encode($data)) === false) {
-            throw new \Exception("Unable to convert job definiton {$this->id} to JSON");
-        }
-
-        return $json;
+      return $data;
     }
 
     /**
@@ -270,23 +264,5 @@ class JobDefinition implements Arrayable
     {
         return count($this->outputs);
     }
-
-    /**
-     * @return null
-     */
-    public function getLastInstanceID()
-    {
-        return $this->lastInstanceID;
-    }
-
-    /**
-     * @param null $lastInstanceID
-     */
-    public function setLastInstanceID($lastInstanceID)
-    {
-        $this->lastInstanceID = $lastInstanceID;
-    }
-
-
 
 }

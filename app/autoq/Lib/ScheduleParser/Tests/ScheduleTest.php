@@ -9,7 +9,7 @@ use Autoq\Lib\Time\Time;
 
 
 require_once __DIR__ . '/../Schedule.php';
-require_once __DIR__ . '/../../Time/time.php';
+require_once __DIR__ . '/../../Time/Time.php';
 
 
 class ScheduleTest extends \PHPUnit_Framework_TestCase

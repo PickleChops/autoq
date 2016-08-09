@@ -72,9 +72,12 @@ $di->set('dBConnectionMgr', [
 /**
  * Bind in our job processor
  */
-$di->set('jobProcessor', function () {
-    return new \Autoq\Services\JobProcessor\JobDefinitionProcessor();
-});
+$di->set('jobProcessor', [
+    'className' => Autoq\Services\JobProcessor\JobDefinitionProcessor::class,
+    'arguments' => [
+        ['type' => 'service', 'name' => 'dbCredService']
+    ]
+]);
 
 /**
  * Bind in our api helper
@@ -106,6 +109,16 @@ $di->set('queueRepo', [
     ]
 );
 
+/**
+ * dbCredRepo
+ */
+$di->set('dbCredRepo', [
+        'className' => \Autoq\Data\DbCredentials\DbCredentialsRepository::class,
+        'arguments' => [
+            ['type' => 'service', 'name' => 'di']
+        ]
+    ]
+);
 
 /**
  * QueueControl
@@ -117,6 +130,18 @@ $di->set('queueControl', [
             ['type' => 'service', 'name' => 'log'],
             ['type' => 'service', 'name' => 'queueRepo'],
             ['type' => 'service', 'name' => 'jobRepo'],
+        ]
+    ]
+);
+
+/**
+ * dbCredService
+ */
+$di->set('dbCredService', [
+        'className' => \Autoq\Services\DbCredentialsService::class,
+        'arguments' => [
+            ['type' => 'service', 'name' => 'config'],
+            ['type' => 'service', 'name' => 'dbCredRepo'],
         ]
     ]
 );
@@ -143,7 +168,8 @@ $di->set('Runner', [
         ['type' => 'service', 'name' => 'config'],
         ['type' => 'service', 'name' => 'log'],
         ['type' => 'service', 'name' => 'queueControl'],
-        ['type' => 'service', 'name' => 'dBConnectionMgr']
+        ['type' => 'service', 'name' => 'dBConnectionMgr'],
+        ['type' => 'service', 'name' => 'dbCredService']
     ]
 ]);
 

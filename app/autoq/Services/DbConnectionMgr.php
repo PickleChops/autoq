@@ -28,7 +28,7 @@ class DbConnectionMgr
         'host' => '',
         'username' => '',
         'password' => '',
-        'dbname' => '',
+        'database' => '',
         'port' => ''
 
     ];
@@ -50,7 +50,7 @@ class DbConnectionMgr
     private function normaliseConfig($config)
     {
 
-        $dBconfig = array_merge($this->connectionConfigKeys, (array)$config);
+        $dBconfig = array_merge($this->connectionConfigKeys, $config);
 
         return $dBconfig;
 
@@ -58,49 +58,63 @@ class DbConnectionMgr
 
     /**
      * Regular get connection, no ping, no retries. Will use default database config unless other provided
-     * @param $configKey
+     * @param $configKeyOrSet
      * @return mixed
      * @throws \Exception
      */
-    public function getConnection($configKey)
+    public function getConnection($configKeyOrSet)
     {
-
-        if (($connectionConfig = $this->config->get($configKey)) === null) {
-            throw new \Exception("Database connection config $configKey not found");
-        }
-
-        
-        $connectionConfig = $this->normaliseConfig($connectionConfig);
+        $connectionConfig = $this->getConfig($configKeyOrSet);
 
         return $this->connectWithRetries($connectionConfig, 1, 0);
     }
 
     /**
      * Try a little harder to get a database connection, also test if existing one has died
-     * @param $configKey
+     * @param $configKeyOrSet
      * @param int $retries
      * @param int $wait
      * @return mixed|null
      * @throws \Exception
      */
-    public function getManagedConnection($configKey, $retries = self::DEFAULT_RETRIES, $wait = self::DEFAULT_WAIT)
+    public function getManagedConnection($configKeyOrSet, $retries = self::DEFAULT_RETRIES, $wait = self::DEFAULT_WAIT)
     {
+        $connectionConfig = $this->getConfig($configKeyOrSet);
 
-        $connection = null;
-        
-        if (($connectionConfig = $this->config->get($configKey)) === null) {
-            throw new \Exception("Database connection config $configKey not found");
-        }
-        
         if ($this->pingConnection($this->connection) === false) {
             $connection = $this->connectWithRetries($connectionConfig, $retries, $wait);
 
             if ($connection instanceof Adapter) {
                 $this->connection = $connection;
             }
+        } else {
+            $connection = $this->connection;
         }
 
         return $connection;
+    }
+
+    /**
+     * @param $configKeyOrSet
+     * @return array|mixed
+     * @throws \Exception
+     */
+    private function getConfig($configKeyOrSet) {
+
+        if(is_array($configKeyOrSet)) {
+            $connectionConfig = $configKeyOrSet;
+        } else {
+            if (($connectionConfig = $this->config->get($configKeyOrSet)) === null) {
+                throw new \Exception("Database connection config $configKeyOrSet not found");
+            }
+            
+            $connectionConfig = (array)$connectionConfig;
+        }
+
+        $connectionConfig = $this->normaliseConfig($connectionConfig);
+
+        return $connectionConfig;
+
     }
 
     /**
@@ -125,12 +139,12 @@ class DbConnectionMgr
                     'host' => $config['host'],
                     'username' => $config['username'],
                     'password' => $config['password'],
-                    'dbname' => $config['dbname'],
+                    'dbname' => $config['database'],
                     'port' => $config['port'],
                 ));
 
             } catch (\PDOException $e) {
-                $this->log->warning("Connection failure attempt $attempts of $retries to host: {$config['host']} database: {$config['dbname']} message: {$e->getMessage()}");
+                $this->log->warning("Connection failure attempt $attempts of $retries to host: {$config['host']} database: {$config['database']} message: {$e->getMessage()}");
                 $attempts++;
             }
 
@@ -139,7 +153,7 @@ class DbConnectionMgr
             } elseif ($attempts < $retries) {
                 sleep($wait);
             } elseif ($attempts == $retries) {
-                $this->log->error("All $attempts connection attempts to host: {$config['host']} database: {$config['dbname']} failed");
+                $this->log->error("All $attempts connection attempts to host: {$config['host']} database: {$config['database']} failed");
             }
         }
 

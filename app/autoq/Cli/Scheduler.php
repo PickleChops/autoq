@@ -22,6 +22,8 @@ class Scheduler implements CliTask
 
     protected $timeHorizon;
 
+    protected $lastPollTime = false;
+
     /**
      * Scheduler constructor.
      * @param Config $config
@@ -48,7 +50,15 @@ class Scheduler implements CliTask
         //Poll database looking for new jobs to schedule
         while (true) {
 
-            $time = new Time(time());
+            $currentTs = time();
+
+            //If we have just started up set psuedo previous poll time
+            if($this->lastPollTime === false) {
+                $this->lastPollTime = $currentTs - $this->config['app']['scheduler_sleep'];
+            }
+
+            //Wrap with a helper object
+            $currentTime = new Time($currentTs);
 
             /**
              * @var $jobs JobDefinition[]
@@ -65,18 +75,13 @@ class Scheduler implements CliTask
                 $schedule = $job->getSchedule();
 
                 //Ignore scehdules that are unable to provide a next event. e.g. Schedule::NONE
-                if (($nextEventTs = $schedule->getNextEventTs($time)) !== false) {
+                if (($nextEventTs = $schedule->getNextEventTs(new Time($this->lastPollTime))) !== false) {
 
                     $nextEventFriendly = date('Y-m-d H:i:s', $nextEventTs);
-                    $currentTimeFriendly = date('Y-m-d H:i:s', $time->getTimestamp()); 
+                    $currentTimeFriendly = date('Y-m-d H:i:s', $currentTime->getTimestamp());
                         
 
-                    if ($nextEventTs > $time->getTimestamp()) {
-
-                        //The job is not ready to run
-                        $this->logForJob($job, "Not scheduled: " . $nextEventFriendly . ' is later than now: ' . $currentTimeFriendly);
-
-                    } else {
+                    if ($nextEventTs >= $this->lastPollTime && $nextEventTs < $currentTime->getTimestamp()) {
 
                         //Ok so job meets criteria of being ready
 
@@ -92,11 +97,22 @@ class Scheduler implements CliTask
                             $this->jobsRepo->update($job->getId(), $job->convertToOrginalDefinition());
                         }
 
+                    } else {
+
+
+                        //The job is not ready to run
+                        $this->logForJob($job, "Not scheduled: " . $nextEventFriendly . ' is later than now: ' . $currentTimeFriendly);
+
+
+
                     }
                 } else {
                     $this->logForJob($job, "No next event time provided for schedule: " . $schedule->getReadableFrequency());
                 }
             }
+
+            //Record last checktime for next poll
+            $this->lastPollTime = $currentTime->getTimestamp();
 
             sleep($this->config['app']['scheduler_sleep']);
         }
@@ -106,8 +122,7 @@ class Scheduler implements CliTask
     /**
      * @return mixed
      */
-    public
-    function getTimeHorizon()
+    public function getTimeHorizon()
     {
         return $this->timeHorizon;
     }
@@ -115,8 +130,7 @@ class Scheduler implements CliTask
     /**
      * @param mixed $timeHorizon
      */
-    public
-    function setTimeHorizon($timeHorizon)
+    public function setTimeHorizon($timeHorizon)
     {
         $this->timeHorizon = $timeHorizon;
     }
@@ -126,8 +140,7 @@ class Scheduler implements CliTask
      * @param $message
      * @param int $type
      */
-    private
-    function logForJob(JobDefinition $job, $message, $type = Logger::INFO)
+    private function logForJob(JobDefinition $job, $message, $type = Logger::INFO)
     {
 
         $message = "Job ID: {$job->getId()} - " . $message;

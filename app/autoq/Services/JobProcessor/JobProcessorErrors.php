@@ -15,7 +15,7 @@ class JobProcessorErrors
     const MSG_NO_SCHEDULE = 5;
     const MSG_NO_OUTPUT = 6;
     const MSG_NO_CONNECTION = 7;
-    const MSG_CONNECTION_NOT_DEFAULT = 8;
+    const MSG_CONNECTION_NOT_FOUND = 8;
     const MSG_FIELD_DATA_TOO_LONG = 9;
     const MSG_UNABLE_TO_PARSE_SCHEDULE = 10;
  
@@ -28,7 +28,7 @@ class JobProcessorErrors
         self::MSG_NO_SCHEDULE => "No schedule provided",
         self::MSG_NO_OUTPUT => "No output(s) provided",
         self::MSG_NO_CONNECTION => "No connection provided",
-        self::MSG_CONNECTION_NOT_DEFAULT => "Only the default connection is currently supported",
+        self::MSG_CONNECTION_NOT_FOUND => "Connection '%s' not found, are you sure it is set up?",
         self::MSG_FIELD_DATA_TOO_LONG => "Field data must be 255 characters or less",
         self::MSG_UNABLE_TO_PARSE_SCHEDULE => "Unable to parse the schedule"
     ];

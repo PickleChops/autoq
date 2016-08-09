@@ -51,7 +51,7 @@ class ValidateJobDefintionTest extends Autoq_TestCase
          */
         $message = reset($messages);
 
-        $this->assertTrue($message->getMessage() == JobProcessorErrors::errorString(JobProcessorErrors::MSG_CONNECTION_NOT_DEFAULT));
+        $this->assertTrue($message->getMessage() == JobProcessorErrors::errorString(JobProcessorErrors::MSG_CONNECTION_NOT_FOUND));
 
     }
 }

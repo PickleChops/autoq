@@ -6,6 +6,7 @@ use Autoq\Data\Queue\QueueControl;
 use Autoq\Data\Queue\FlowControl;
 use Autoq\Data\Queue\QueueItem;
 use Autoq\Services\DbConnectionMgr;
+use Autoq\Services\DbCredentialsService;
 use Phalcon\Config;
 use Phalcon\Db\Adapter;
 use Phalcon\Db\ResultInterface;
@@ -19,6 +20,7 @@ class Runner implements CliTask
     protected $log;
     protected $queueControl;
     private $dbConnectionMgr;
+    private $dbCredentialsService;
 
     /**
      * Runner constructor.
@@ -26,13 +28,15 @@ class Runner implements CliTask
      * @param Stream $log
      * @param QueueControl $queueControl
      * @param DbConnectionMgr $dbConnectionMgr
+     * @param DbCredentialsService $dbCredentialsService
      */
-    public function __construct(Config $config, Stream $log, QueueControl $queueControl, DbConnectionMgr $dbConnectionMgr)
+    public function __construct(Config $config, Stream $log, QueueControl $queueControl, DbConnectionMgr $dbConnectionMgr, DbCredentialsService $dbCredentialsService)
     {
         $this->config = $config;
         $this->log = $log;
         $this->queueControl = $queueControl;
         $this->dbConnectionMgr = $dbConnectionMgr;
+        $this->dbCredentialsService = $dbCredentialsService;
     }
 
     /**
@@ -54,28 +58,33 @@ class Runner implements CliTask
 
                     $this->logForQueueItem($queueItem, "starting data fetch...");
 
+                    //@todo - bail if error, pass creds through to getConnection
+                    $dbCredSet = $this->dbCredentialsService->getByAlias($queueItem->getJobDefintion()->getConnection());
+
                     /**
                      * @var $connection Adapter\Pdo
                      */
+                    if (($connection = $this->dbConnectionMgr->getConnection($dbCredSet)) !== null) {
 
-                    $connection = $this->dbConnectionMgr->getConnection('postgres');
+                        $this->logForQueueItem($queueItem, "Connection to database established, now executing job query..");
 
-                    $this->logForQueueItem($queueItem, "Connection to database established, now executing job query..");
+                        $results = $connection->query($queueItem->getJobDefintion()->getQuery());
 
-                    $results = $connection->query($queueItem->getJobDefintion()->getQuery());
+                        if ($this->hasResultSet($results)) {
 
-                    if ($this->hasResultSet($results)) {
+                            $this->logForQueueItem($queueItem, "Query returns a resultset, saving data...");
 
-                        $this->logForQueueItem($queueItem, "Query returns a resultset, saving data...");
+                            $this->saveResultSetToStaging($queueItem, $results);
 
-                        $this->saveResultSetToStaging($queueItem, $results);
-                     
+                        } else {
+                            $this->logForQueueItem($queueItem, "No resultset received for this query, fetching complete");
+                        }
+
+                        $this->queueControl->updateStatus($queueItem, FlowControl::STATUS_FETCHING_COMPLETE);
+                        $connection = null; //Clear db connection
                     } else {
-                        $this->logForQueueItem($queueItem, "No resultset received for this query, fetching complete");
+                        throw new \Exception("No database connection established");
                     }
-
-                    $this->queueControl->updateStatus($queueItem, FlowControl::STATUS_FETCHING_COMPLETE);
-                    $connection = null; //Clear db connection
 
                 } catch (\Exception $e) {
                     //If an exception happens whlst running mark change queue status to ERROR, and log 
@@ -98,7 +107,7 @@ class Runner implements CliTask
     private function saveResultSetToStaging(QueueItem $queueItem, ResultInterface $results)
     {
         $dir = rtrim($this->config['app']['runner_staging_dir'], '/') . '/';
-        
+
         $filepath = $dir . $queueItem->getDataStageKey() . '.csv';
 
         if ($handle = fopen($filepath, 'w')) {

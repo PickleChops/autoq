@@ -3,6 +3,7 @@
 
 namespace Autoq\Services\JobProcessor\ItemProcessors;
 
+use Autoq\Services\DbCredentialsService;
 use Autoq\Services\JobProcessor\JobProcessorErrors;
 use Phalcon\Validation\Message;
 use Phalcon\Validation\Message\Group;
@@ -18,13 +19,21 @@ abstract class JobItemProcessor
     private $messages;
 
     private $isValid = false;
+    
+    /**
+     * @var DbCredentialsService
+     */
+    protected $dbCredentialsService;
 
     /**
      * JobNameProcessor constructor.
      * @param $rawData
+     * @param DbCredentialsService $dbCredentialsService
      */
-    public function __construct($rawData)
+    public function __construct($rawData, DbCredentialsService $dbCredentialsService)
     {
+        $this->dbCredentialsService = $dbCredentialsService;
+
         $this->rawData = $rawData;
         $this->messages = new Group();
         $this->additionalDefinitionData = null;
@@ -34,6 +43,7 @@ abstract class JobItemProcessor
 
 
         $this->isValid = $this->messages->count() == 0;
+
     }
 
     /**
@@ -75,10 +85,11 @@ abstract class JobItemProcessor
 
     /**
      * @param $code
+     * @param array $params
      */
-    protected function addMessageByCode($code)
+    protected function addMessageByCode($code, $params = [])
     {
-        $message = JobProcessorErrors::asMessageObject($code);
+        $message = JobProcessorErrors::asMessageObject($code, $params);
         $message->setField($this->getFieldName());
 
         $this->messages->appendMessage($message);

@@ -16,7 +16,7 @@ class JobConnectionProcessor extends JobItemProcessor
      */
     protected function sanitize($data)
     {
-        return ItemFilters::trim($data);
+        return ItemFilters::trim(strtolower($data));
     }
 
     /**
@@ -29,8 +29,8 @@ class JobConnectionProcessor extends JobItemProcessor
             $this->addMessageByCode(JobProcessorErrors::MSG_NO_CONNECTION);
         }
 
-        if (!ItemValidations::in($data, ['default'])) {
-            $this->addMessageByCode(JobProcessorErrors::MSG_CONNECTION_NOT_DEFAULT);
+        if (!ItemValidations::in($data, $this->dbCredentialsService->getAliases())) {
+            $this->addMessageByCode(JobProcessorErrors::MSG_CONNECTION_NOT_FOUND, [$data]);
         }
 
         if (!ItemValidations::maxLength($data, 255)) {

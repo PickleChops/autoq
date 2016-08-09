@@ -9,6 +9,7 @@ use Autoq\Data\Queue\QueueControl;
 use Autoq\Data\Queue\FlowControl;
 use Autoq\Data\Queue\QueueItem;
 use Autoq\Services\DbConnectionMgr;
+use Autoq\Services\S3CredentialsService;
 use Aws\S3\MultipartUploader;
 use Aws\S3\S3Client;
 use Phalcon\Config;
@@ -27,9 +28,13 @@ class Sender implements CliTask
     private $view;
 
     private $resultsPathInfo;
-    
-    
+
+
     const MAX_HTML_ROWS = 50;
+    /**
+     * @var S3CredentialsService
+     */
+    private $s3CredentialsService;
 
 
     /**
@@ -39,14 +44,16 @@ class Sender implements CliTask
      * @param QueueControl $queueControl
      * @param DbConnectionMgr $dbConnectionMgr
      * @param Simple $view
+     * @param S3CredentialsService $s3CredentialsService
      */
-    public function __construct(Config $config, Stream $log, QueueControl $queueControl, DbConnectionMgr $dbConnectionMgr, Simple $view)
+    public function __construct(Config $config, Stream $log, QueueControl $queueControl, DbConnectionMgr $dbConnectionMgr, Simple $view, S3CredentialsService $s3CredentialsService)
     {
         $this->config = $config;
         $this->log = $log;
         $this->queueControl = $queueControl;
         $this->dbConnectionMgr = $dbConnectionMgr;
         $this->view = $view;
+        $this->s3CredentialsService = $s3CredentialsService;
     }
 
     /**
@@ -174,16 +181,16 @@ class Sender implements CliTask
                 break;
             case OutputEmail::STYLE_HTML:
                 $resultData = $this->readRowsFromStagingFile(self::MAX_HTML_ROWS, $rowsRemain);
-                
+
                 $otherData = [
-                    
+
                     'rowsRemain' => $rowsRemain,
                     'schedule' => $jobDefinition->getScheduleOriginal()
-                    
+
                 ];
-                
+
                 $markup = $this->buildHTML($resultData, $otherData);
-                
+
                 $message->addPart($markup, 'text/html');
                 break;
             default:
@@ -209,14 +216,15 @@ class Sender implements CliTask
      * @param JobDefinition $jobDefinition
      * @return string
      */
-    private function buildPlainTextBody(JobDefinition $jobDefinition) {
-        
+    private function buildPlainTextBody(JobDefinition $jobDefinition)
+    {
+
         $body = "Here are the results from job ID: {$jobDefinition->getId()} - {$jobDefinition->getName()}\n\n";
-        
+
         $body .= "Schedule: {$jobDefinition->getScheduleOriginal()}\n\n";
-        
+
         $body .= "Autoq\n\n";
-        
+
         return $body;
     }
 
@@ -225,27 +233,28 @@ class Sender implements CliTask
      * @param $otherData
      * @return string
      */
-    private function buildHTML($data, $otherData) {
+    private function buildHTML($data, $otherData)
+    {
 
         $headerRow = [];
         $dataRows = [];
         $noResultSet = true;
-        
-        if(count($data) > 0) {
+
+        if (count($data) > 0) {
             $noResultSet = false;
             $headerRow = array_shift($data);
             $dataRows = $data;
         }
-        
+
         $templateData = $otherData;
 
         $templateData['noResultSet'] = $noResultSet;
         $templateData['headerRow'] = $headerRow;
         $templateData['dataRows'] = $dataRows;
-        
-        $html =  $this->view->render("email/senderHtml", $templateData);
 
-       return $html;
+        $html = $this->view->render("email/senderHtml", $templateData);
+
+        return $html;
 
     }
 
@@ -255,6 +264,7 @@ class Sender implements CliTask
      * @param $limit
      * @param bool $rowsRemain
      * @return array
+     * @throws \Exception
      */
     private function readRowsFromStagingFile($limit, &$rowsRemain = false)
     {
@@ -263,27 +273,32 @@ class Sender implements CliTask
 
         $filepath = $this->resultsPathInfo['dirname'] . "/" . $this->resultsPathInfo['basename'];
 
-        if ($handle = fopen($filepath, 'r')) {
+        if (file_exists($filepath)) {
 
-            $count = 0;
-            $limit++; //Add extra line for headers
+            if ($handle = fopen($filepath, 'r')) {
 
-            while ($count < $limit && ($row = fgetcsv($handle))) {
-                $rows[] = $row;
-                $count++;
+                $count = 0;
+                $limit++; //Add extra line for headers
+
+                while ($count < $limit && ($row = fgetcsv($handle))) {
+                    $rows[] = $row;
+                    $count++;
+                }
+
+                //Try and get read another row to see if more data is available and set flag accordingly
+                if (fgetcsv($handle) === false) {
+                    $rowsRemain = true;
+                }
+
+                fclose($handle);
+
             }
-            
-            //Try and get read another row to see if more data is available and set flag accordingly
-            if(fgetcsv($handle) === false) {
-                $rowsRemain = true;
-            }
-
-            fclose($handle);
-
+        } else {
+            throw new \Exception("Unable to find file: $filepath");
         }
-        
+
         return $rows;
-        
+
     }
 
 
@@ -297,13 +312,15 @@ class Sender implements CliTask
 
         $filepath = $this->resultsPathInfo['dirname'] . "/" . $this->resultsPathInfo['basename'];
 
+        $config = $this->s3CredentialsService->getByAlias('default');
+
         $s3 = new S3Client([
             'version' => 'latest',
-            'region' => 'eu-west-1',
+            'region' => $config['region'],
 
             'credentials' => [
-                'key' => $this->config['s3']['default_key'],
-                'secret' => $this->config['s3']['default_secret']
+                'key' => $config['key'],
+                'secret' => $config['secret']
             ],
         ]);
 

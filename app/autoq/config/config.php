@@ -12,10 +12,11 @@ $settings = [
         'sender_sleep' => getenv('APP_SENDER_SLEEP')
     ],
     
-    "s3" => [
+    "default_sender_s3" => [
       
-        'default_key' => getenv('S3_DEFAULT_KEY'),
-        'default_secret' => getenv('S3_DEFAULT_SECRET'),
+        'region' => 'eu-west-1',
+        'key' => getenv('S3_DEFAULT_KEY'),
+        'secret' => getenv('S3_DEFAULT_SECRET')
     ],
     
     "mysql" => [
@@ -24,17 +25,17 @@ $settings = [
         "port" => getenv('DATABASE_PORT'),
         "username" => getenv('DATABASE_USER'),
         "password" => getenv('DATABASE_PASSWORD'),
-        "dbname" => getenv('DATABASE_NAME')
+        "database" => getenv('DATABASE_NAME')
 
     ],
 
-    "postgres" => [
+    "default_runner_db" => [
         "adapter" => \Phalcon\Db\Adapter\Pdo\Postgresql::class,
         "host" => getenv('PG_DATABASE_HOST'),
         "port" => getenv('PG_DATABASE_PORT'),
         "username" => getenv('PG_DATABASE_USER'),
         "password" => getenv('PG_DATABASE_PASSWORD'),
-        "dbname" => getenv('PG_DATABASE_NAME')
+        "database" => getenv('PG_DATABASE_NAME')
     ],
 ];
 

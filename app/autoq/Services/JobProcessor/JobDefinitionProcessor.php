@@ -2,6 +2,7 @@
 
 namespace Autoq\Services\JobProcessor;
 
+use Autoq\Services\DbCredentialsService;
 use Autoq\Services\JobProcessor\ItemProcessors\JobConnectionProcessor;
 use Autoq\Services\JobProcessor\ItemProcessors\JobNameProcessor;
 use Autoq\Services\JobProcessor\ItemProcessors\JobScheduleProcessor;
@@ -20,13 +21,20 @@ class JobDefinitionProcessor
      * @var $definition mixed
      */
     private $definition;
+    /**
+     * @var DbCredentialsService
+     */
+    private $dbCredentialsService;
 
 
     /**
      * JobDefinitionProcessor constructor.
+     * @param DbCredentialsService $dbCredentialsService
      */
-    public function __construct()
+    public function __construct(DbCredentialsService $dbCredentialsService)
     {
+         $this->dbCredentialsService = $dbCredentialsService;
+
         $this->messages = new Group();
     }
 
@@ -70,7 +78,7 @@ class JobDefinitionProcessor
 
         //Name
 
-        $nameProcessor = new JobNameProcessor($data['name']);
+        $nameProcessor = new JobNameProcessor($data['name'], $this->dbCredentialsService);
 
         if (!$nameProcessor->getIsValid()) {
             $this->appendMessages($nameProcessor->getMessages());
@@ -78,7 +86,7 @@ class JobDefinitionProcessor
 
         //Connection
 
-        $connectionProcessor = new JobConnectionProcessor($data['connection']);
+        $connectionProcessor = new JobConnectionProcessor($data['connection'], $this->dbCredentialsService);
 
         if (!$connectionProcessor->getIsValid()) {
             $this->appendMessages($connectionProcessor->getMessages());
@@ -86,7 +94,7 @@ class JobDefinitionProcessor
 
         //Schedule
 
-        $scheduleProcessor = new JobScheduleProcessor($data['schedule']);
+        $scheduleProcessor = new JobScheduleProcessor($data['schedule'], $this->dbCredentialsService);
 
         if (!$scheduleProcessor->getIsValid()) {
             $this->appendMessages($scheduleProcessor->getMessages());

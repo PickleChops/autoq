@@ -6,7 +6,7 @@ use Autoq\Data\Queue\QueueControl;
 /**
  * Class QueueController Endpoints for /queue/ api calls
  */
-class QueueController extends BaseController
+class QueueController extends SecureController
 {
     /**
      * @var $queueControl QueueControl

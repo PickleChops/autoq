@@ -11,8 +11,8 @@ $router->setUriSource(\Phalcon\Mvc\Router::URI_SOURCE_SERVER_REQUEST_URI);
 $router->notFound(
     array(
         'namespace'  => 'Autoq\Controllers',
-        "controller" => "Error404",
-        "action"     => "index"
+        "controller" => "Error",
+        "action"     => "notFound"
     )
 );
 

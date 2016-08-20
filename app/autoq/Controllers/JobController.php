@@ -8,7 +8,7 @@ use Autoq\Lib\ScheduleParser\ScheduleParser;
 /**
  * Class JobController Endpoints for /job/ api calls
  */
-class JobController extends BaseController
+class JobController extends SecureController
 {
 
     /**

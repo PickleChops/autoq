@@ -31,7 +31,6 @@ class DbCredentialsRepository extends BaseRepository
      */
     public function getById($id)
     {
-
         try {
 
             $row = $this->dBConnection->fetchOne("SELECT * FROM db_credentials where id = :id", Db::FETCH_ASSOC, ['id' => $id]);

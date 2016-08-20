@@ -187,6 +187,16 @@ $di->set('Sender', [
     ]
 ]);
 
+/**
+ * Cli Admin
+ */
+$di->set('Admin', [
+    'className' => \Autoq\Cli\Admin::class,
+    'arguments' => [
+        ['type' => 'service', 'name' => 'config'],
+        ['type' => 'service', 'name' => 'dBConnectionMgr']
+    ]
+]);
 
 return $di;
 

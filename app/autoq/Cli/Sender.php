@@ -29,7 +29,6 @@ class Sender implements CliTask
 
     private $resultsPathInfo;
 
-
     const MAX_HTML_ROWS = 50;
     /**
      * @var S3CredentialsService

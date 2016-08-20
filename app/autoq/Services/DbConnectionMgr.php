@@ -59,7 +59,7 @@ class DbConnectionMgr
     /**
      * Regular get connection, no ping, no retries. Will use default database config unless other provided
      * @param $configKeyOrSet
-     * @return mixed
+     * @return Adapter\Pdo
      * @throws \Exception
      */
     public function getConnection($configKeyOrSet)
@@ -121,7 +121,7 @@ class DbConnectionMgr
      * @param array $config
      * @param int $retries
      * @param int $wait
-     * @return mixed
+     * @return Adapter\Pdo
      */
     public function connectWithRetries(Array $config, $retries = self::DEFAULT_RETRIES, $wait = self::DEFAULT_WAIT)
     {

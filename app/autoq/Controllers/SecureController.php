@@ -20,7 +20,7 @@ class SecureController extends BaseController
      */
     protected function beforeExecuteRoute(Dispatcher $dispatcher)
     {
-        if((int)getenv('AUTOQ_AUTH') === 0) {
+        if(getenv('AUTOQ_AUTH') === "0") {
             return true;
         }
 

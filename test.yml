@@ -11,6 +11,9 @@ services:
     volumes:
     - ./infrastructure/php-fpm/config/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
   mysql:
+  # Travis already has MySQL running on 3306
+    ports:
+      - 3307:3306
     volumes:
     - ./infrastructure/mysql/data/base.sql:/docker-entrypoint-initdb.d/base.sql
     - ./infrastructure/mysql/data/dev_user.sql:/docker-entrypoint-initdb.d/dev_user.sql

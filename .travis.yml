@@ -38,6 +38,7 @@ before_install:
 
 script:
     - make tests
+    - make logs
 
 
 

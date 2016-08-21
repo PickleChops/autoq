@@ -1,7 +1,6 @@
 <?php
 
 namespace Autoq\Tests\Services;
-use Autoq\Services\DbCredentialsService;
 use Autoq\Services\JobProcessor\JobDefinitionProcessor;
 use Autoq\Services\JobProcessor\JobProcessorErrors;
 use Autoq\Tests\Autoq_TestCase;

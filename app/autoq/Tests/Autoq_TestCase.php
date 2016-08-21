@@ -2,6 +2,7 @@
 
 namespace Autoq\Tests;
 
+use Autoq\Services\DbCredentialsService;
 use Phalcon\Config;
 use Phalcon\Db\Adapter\Pdo\Mysql;
 use Phalcon\Di;
@@ -21,6 +22,10 @@ class Autoq_TestCase extends \PHPUnit_Framework_TestCase
     protected static $config;
 
     /**
+     * @var $dbCredentialService DbCredentialsService
+     */
+    protected static $dbCredentialService;
+    /**
      * @var $connection Mysql
      */
     protected static $dbConnection = null;
@@ -34,6 +39,7 @@ class Autoq_TestCase extends \PHPUnit_Framework_TestCase
     {
         self::$di = Di::getDefault();
         self::$config = self::$di->get('config');
+        self::$dbCredentialService = self::$di->get('dbCredService');
     }
 
     /**

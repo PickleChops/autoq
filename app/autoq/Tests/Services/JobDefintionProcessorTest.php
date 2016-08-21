@@ -1,6 +1,7 @@
 <?php
 
 namespace Autoq\Tests\Services;
+use Autoq\Services\DbCredentialsService;
 use Autoq\Services\JobProcessor\JobDefinitionProcessor;
 use Autoq\Services\JobProcessor\JobProcessorErrors;
 use Autoq\Tests\Autoq_TestCase;
@@ -13,7 +14,7 @@ class ValidateJobDefintionTest extends Autoq_TestCase
     {
         $input = file_get_contents($this->getTestDataResourceFilePath('example_job_no_job_name.yaml'));
 
-        $processor = new JobDefinitionProcessor();
+        $processor = new JobDefinitionProcessor(self::$dbCredentialService);
 
         $valid = $processor->processJobDefiniton($input);
 
@@ -36,7 +37,7 @@ class ValidateJobDefintionTest extends Autoq_TestCase
     {
         $input = file_get_contents($this->getTestDataResourceFilePath('example_job_invalid_connection.yaml'));
 
-        $validator = new JobDefinitionProcessor();
+        $validator = new JobDefinitionProcessor(self::$dbCredentialService);
 
         $valid = $validator->processJobDefiniton($input);
 
@@ -51,7 +52,7 @@ class ValidateJobDefintionTest extends Autoq_TestCase
          */
         $message = reset($messages);
 
-        $this->assertTrue($message->getMessage() == JobProcessorErrors::errorString(JobProcessorErrors::MSG_CONNECTION_NOT_FOUND));
+        $this->assertTrue($message->getMessage() == JobProcessorErrors::errorString(JobProcessorErrors::MSG_CONNECTION_NOT_FOUND, 'this_is_wrong'));
 
     }
 }

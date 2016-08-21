@@ -14,6 +14,7 @@ env:
         - DOCKER_VERSION=1.12.1-0~trusty
         - DOCKER_COMPOSE_VERSION=1.6.2
         - COMPOSE_CONFIG_FILES="-f base.yml -f test.yml"
+        - AUTOQ_AUTH=0
 
 before_install:
     # list docker-engine versions
@@ -32,9 +33,8 @@ before_install:
     - cp ./app/autoq/travis.env ./app/autoq/.env
     - make compose
     - make up
-    - sleep 30
+    - sleep 10
     - docker ps -a
-    - docker logs autoq_sender_1 #Debug
 
 script:
     - make tests

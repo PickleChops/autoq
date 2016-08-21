@@ -41,7 +41,7 @@ class JobDefinitionProcessor
     /**
      * Given raw input from user attempt to validate as a job defintion
      * @param $rawDefinition
-     * @return array
+     * @return bool
      */
     public function processJobDefiniton($rawDefinition)
     {
@@ -71,11 +71,10 @@ class JobDefinitionProcessor
     /**
      * Validate the parsed YAML
      * @param $data
-     * @return Group
+     * @return bool
      */
     private function processParsedYaml($data)
     {
-
         //Name
 
         $nameProcessor = new JobNameProcessor($data['name'], $this->dbCredentialsService);
@@ -142,7 +141,6 @@ class JobDefinitionProcessor
      */
     public function getFirstError()
     {
-
         $message = "";
 
         if ($this->messages->count()) {
@@ -167,11 +165,9 @@ class JobDefinitionProcessor
      */
     private function appendMessages(Group $messages)
     {
-
         foreach ($messages as $message) {
             $this->messages->appendMessage($message);
         }
-
     }
 
 }

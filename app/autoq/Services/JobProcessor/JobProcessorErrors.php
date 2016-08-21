@@ -66,10 +66,13 @@ class JobProcessorErrors
 
     /**
      * @param $code
+     * @param array $params
      * @return mixed
      */
-    public static function errorString($code)
+    public static function errorString($code, $params = [])
     {
-        return self::$msgText[$code];
+        $baseMessage = self::$msgText[$code];
+
+        return vsprintf($baseMessage, $params);
     }
 }

@@ -38,7 +38,7 @@ before_install:
 
 script:
     - make tests
-    - make logs
+    - docker logs autoq_mysql_1
 
 
 

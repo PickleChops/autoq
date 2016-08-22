@@ -206,7 +206,8 @@ $di->set('Sender', [
         ['type' => 'service', 'name' => 'log'],
         ['type' => 'service', 'name' => 'queueControl'],
         ['type' => 'service', 'name' => 'dBConnectionMgr'],
-        ['type' => 'service', 'name' => 'view']
+        ['type' => 'service', 'name' => 'view'],
+        ['type' => 'service', 'name' => 's3CredService']
     ]
 ]);
 

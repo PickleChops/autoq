@@ -121,6 +121,17 @@ $di->set('dbCredRepo', [
 );
 
 /**
+ * s3CredRepo
+ */
+$di->set('s3CredRepo', [
+        'className' => \Autoq\Data\S3Credentials\S3CredentialsRepository::class,
+        'arguments' => [
+            ['type' => 'service', 'name' => 'di']
+        ]
+    ]
+);
+
+/**
  * QueueControl
  */
 $di->set('queueControl', [
@@ -142,6 +153,18 @@ $di->set('dbCredService', [
         'arguments' => [
             ['type' => 'service', 'name' => 'config'],
             ['type' => 'service', 'name' => 'dbCredRepo'],
+        ]
+    ]
+);
+
+/**
+ * s3CredService
+ */
+$di->set('s3CredService', [
+        'className' => \Autoq\Services\S3CredentialsService::class,
+        'arguments' => [
+            ['type' => 'service', 'name' => 'config'],
+            ['type' => 'service', 'name' => 's3CredRepo'],
         ]
     ]
 );

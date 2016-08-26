@@ -28,6 +28,9 @@ tests:
 util:
 	docker-compose $(COMPOSE_CONFIG_FILES) run --rm --no-deps utils bash
 
+schema:
+	docker exec autoq_mysql_1 /bin/bash -c "mysqldump autoq -B --no-data -u root -pdev" | sed 's/ AUTO_INCREMENT=[0-9]*//g' > ./infrastructure/mysql/data/base.sql
+
 compose:
 	docker-compose $(COMPOSE_CONFIG_FILES) run --rm --no-deps utils composer install
 

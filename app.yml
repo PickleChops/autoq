@@ -1,0 +1,14 @@
+version: '2'
+
+services:
+  app:
+    image: skytsar/autoq-basephp
+    volumes:
+    - .:/source
+    - app:/app
+    command: /bin/bash -c "cp -rf /source/* /app"
+volumes:
+  app:
+
+
+

@@ -1,0 +1,29 @@
+version: '2'
+
+services:
+  api:
+    environment:
+    - NGINX_SERVER_NAME=autoq.boydstratton.com
+    - NGINX_FASTCGI_READ_TIMEOUT=60s
+  phpfpm:
+    environment:
+    - AUTOQ_AUTH
+  utils:
+    environment:
+    - COMPOSER_DISABLE_XDEBUG_WARN=1
+    - COMPOSER_ALLOW_SUPERUSER=1
+  mysql:
+    ports:
+      - 3306:3306
+    volumes:
+    - ./infrastructure/mysql/data/base.sql:/docker-entrypoint-initdb.d/base.sql
+    - ./infrastructure/mysql/data/dev_user.sql:/docker-entrypoint-initdb.d/dev_user.sql
+    environment:
+    - MYSQL_ROOT_PASSWORD
+  postfix:
+    hostname: mail.autoq.localdev
+    env_file: ./app/autoq/postfix.env
+    build: ./infrastructure/postfix-relay
+    image: skytsar/postfix
+    expose:
+    - 25

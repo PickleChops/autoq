@@ -1,0 +1,58 @@
+version: '2'
+
+services:
+  api:
+    image: skytsar/nginx
+    ports:
+    - "80:80"
+    environment:
+    - NGINX_SERVER_NAME=autoq.boydstratton.com
+    - NGINX_FASTCGI_READ_TIMEOUT=60s
+    volumes:
+    - app:/usr/share/nginx/html
+    command: /bin/bash -c "envsubst '\$${NGINX_SERVER_NAME} \$${NGINX_FASTCGI_READ_TIMEOUT}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
+  phpfpm:
+    image: skytsar/phpfpm-phalcon
+    volumes:
+    - app:/var/www/html
+  mysql:
+    image: skytsar/mysql
+    hostname: mysql
+    expose:
+     - 3306
+    environment:
+      - MYSQL_ROOT_PASSWORD
+ postfix:
+    hostname: mail.autoq.localdev
+    env_file: ./app/autoq/postfix.env
+    build: ./infrastructure/postfix-relay
+    image: skytsar/postfix
+    expose:
+    - 25
+  basephp:
+    image: skytsar/autoq-basephp
+    volumes:
+    - app:/usr/src/autoq
+    working_dir: /usr/src/autoq
+   scheduler:
+    extends:
+     service: basephp
+    command: [php, cli.php, Scheduler]
+  runner:
+    extends:
+     service: basephp
+    volumes:
+    - staging:/usr/src/autoq/staging
+    command: [php, cli.php, Runner]
+  sender:
+    extends:
+     service: basephp
+    volumes:
+    - staging:/usr/src/autoq/staging
+    command: [php, cli.php, Sender]
+volumes:
+ staging:
+ app:
+
+
+

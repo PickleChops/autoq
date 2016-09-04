@@ -49,7 +49,6 @@ runner-logs:
 sender-logs:
 	-$(call show_logs,sender)
 
-
 logs:
 	-$(call show_logs)
 

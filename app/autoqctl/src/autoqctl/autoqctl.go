@@ -13,6 +13,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/user"
 	"text/template"
 	"time"
 )
@@ -69,6 +70,11 @@ var (
 
 	status = app.Command("status", "View status of work queue")
 )
+
+type AppConfig struct {
+	Host   string
+	Apikey string
+}
 
 type QueueApiResponse struct {
 	Status string
@@ -132,13 +138,17 @@ var out io.Writer = os.Stdout
 
 var logger *log.Logger
 
+var config AppConfig
+
 // Off we go
 func main() {
 
 	//Kick off a logger
 	logger = log.New(out, "", log.Ldate|log.Ltime)
 
-	logger.Println("Autoqctl started...")
+	logger.Println("Autoqctl started")
+
+	readConfigFile()
 
 	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
 
@@ -148,6 +158,30 @@ func main() {
 	case status.FullCommand():
 		statusCommand()
 	}
+}
+
+// Look for config file holding details of host/api key
+func readConfigFile() {
+
+	usr, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	logger.Println("Reading config file...")
+
+	fileContents, err := ioutil.ReadFile(usr.HomeDir + "/.autoq")
+
+	if err != nil {
+		logger.Fatalf(fmt.Sprintf("autoqctl: %v\n", err))
+	}
+
+	if err := json.Unmarshal(fileContents, &config); err != nil {
+		logger.Fatalf("Problem reading config: %s", err)
+	}
+
+	logger.Println("Using Autoq host: " + config.Host)
+
 }
 
 //Process status command
@@ -302,7 +336,7 @@ func buildPostBodyFromFlags(name string, connection string, schedule string, que
 //Make server request
 func apiGetRequest(requestPath string) []byte {
 
-	url := apiHost + requestPath
+	url := "http://" + config.Host + requestPath + "?apikey=" + config.Apikey
 
 	//Simple fetch from api
 	resp, err := http.Get(url)
@@ -324,7 +358,7 @@ func apiGetRequest(requestPath string) []byte {
 // Post contents to /jobs/ on Autoq
 func postJobDefinition(postBody []byte) ([]byte, error) {
 
-	url := apiHost + "/jobs/"
+	url := "http://" + config.Host + "/jobs/" + "?apikey=" + config.Apikey
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(postBody))
 
